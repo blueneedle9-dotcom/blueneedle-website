@@ -1,8 +1,8 @@
-const rawBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const rawBaseUrl = import.meta.env.VITE_API_URL || '';
 
 /**
- * Normalized backend API base URL (no trailing slash).
- * Set VITE_API_URL in Vercel Frontend Environment Variables.
+ * Normalized backend API base URL (empty string uses same-origin `/api/*` on Vercel
+ * and Vite dev proxy locally).
  */
 export const API_BASE_URL = rawBaseUrl.replace(/\/+$/, '');
 
