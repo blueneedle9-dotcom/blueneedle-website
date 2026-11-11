@@ -27,3 +27,29 @@ export function getSupabaseClient() {
 
   return cachedClient;
 }
+
+/**
+ * Inspects the configured SUPABASE_SERVICE_ROLE_KEY format without revealing secrets,
+ * so we can warn if an anon/publishable key was configured by mistake.
+ */
+export function detectSupabaseKeyRole() {
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+  if (!key) return 'missing';
+  if (key.startsWith('sb_publishable_')) return 'anon';
+  if (key.startsWith('sb_secret_')) return 'service_role';
+
+  const parts = key.split('.');
+  if (parts.length === 3) {
+    try {
+      const payload = JSON.parse(
+        Buffer.from(parts[1], 'base64url').toString('utf8')
+      );
+      if (typeof payload?.role === 'string') {
+        return payload.role;
+      }
+    } catch {
+      return 'unknown';
+    }
+  }
+  return 'unknown';
+}

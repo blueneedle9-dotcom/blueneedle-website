@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import { getSupabaseClient } from './config/supabase.js';
+import { detectSupabaseKeyRole, getSupabaseClient } from './config/supabase.js';
 import {
   hashPassword,
   isValidEmail,
@@ -65,9 +65,28 @@ app.get(['/', '/api'], (_req, res) => {
 app.get('/api/health', async (_req, res) => {
   try {
     const supabase = getSupabaseClient();
+    const keyRole = detectSupabaseKeyRole();
     const { error } = await supabase.from('categories').select('id').limit(1);
     if (error) throw error;
-    res.json({ status: 'ok', database: 'supabase-connected' });
+
+    const { count: usersCount, error: usersErr } = await supabase
+      .from('users')
+      .select('id', { count: 'exact', head: true });
+
+    const { data: adminRow, error: adminErr } = await supabase
+      .from('users')
+      .select('id, role, is_active')
+      .ilike('email', 'admin123@gmail.com')
+      .maybeSingle();
+
+    res.json({
+      status: 'ok',
+      database: 'supabase-connected',
+      keyRole,
+      usersCount: usersErr ? null : usersCount ?? 0,
+      roleColumnReady: !adminErr,
+      adminReady: Boolean(adminRow && adminRow.is_active !== false),
+    });
   } catch (err) {
     res.status(500).json({
       status: 'error',
@@ -390,6 +409,12 @@ app.patch('/api/rfq/:id', async (req, res) => {
 // Auth: Register B2B user (Name/Username, Email, Password)
 app.post('/api/auth/register', async (req, res) => {
   try {
+    if (detectSupabaseKeyRole() === 'anon') {
+      return res.status(500).json({
+        error: 'Server configuration error: SUPABASE_SERVICE_ROLE_KEY is set to a public anon key. Replace it with the service_role secret key in Vercel Environment Variables.',
+      });
+    }
+
     const supabase = getSupabaseClient();
     const body = req.body && typeof req.body === 'object' ? req.body : {};
 
@@ -515,6 +540,12 @@ app.post('/api/auth/register', async (req, res) => {
 // Auth: Login with email and password
 app.post('/api/auth/login', async (req, res) => {
   try {
+    if (detectSupabaseKeyRole() === 'anon') {
+      return res.status(500).json({
+        error: 'Server configuration error: SUPABASE_SERVICE_ROLE_KEY is set to a public anon key. Replace it with the service_role secret key in Vercel Environment Variables.',
+      });
+    }
+
     const supabase = getSupabaseClient();
     const body = req.body && typeof req.body === 'object' ? req.body : {};
 
