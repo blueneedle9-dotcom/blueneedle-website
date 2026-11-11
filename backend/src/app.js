@@ -2,6 +2,16 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import { getSupabaseClient } from './config/supabase.js';
+import {
+  hashPassword,
+  isValidEmail,
+  normalizeEmail,
+  sanitizeUser,
+  signAuthToken,
+  validatePassword,
+  verifyAuthToken,
+  verifyPassword,
+} from './utils/auth.js';
 
 const app = express();
 
@@ -40,6 +50,9 @@ app.get(['/', '/api'], (_req, res) => {
     status: 'ok',
     endpoints: [
       '/api/health',
+      '/api/auth/register',
+      '/api/auth/login',
+      '/api/auth/me',
       '/api/categories',
       '/api/materials',
       '/api/products',
@@ -372,6 +385,256 @@ app.patch('/api/rfq/:id', async (req, res) => {
   } catch (err) {
     return res.status(500).json({ error: err instanceof Error ? err.message : 'Failed to update RFQ status' });
   }
+});
+
+// Auth: Register B2B user (Name/Username, Email, Password)
+app.post('/api/auth/register', async (req, res) => {
+  try {
+    const supabase = getSupabaseClient();
+    const body = req.body && typeof req.body === 'object' ? req.body : {};
+
+    const rawName = typeof body.fullName === 'string'
+      ? body.fullName
+      : typeof body.name === 'string'
+        ? body.name
+        : typeof body.username === 'string'
+          ? body.username
+          : '';
+    const fullName = rawName.trim();
+    const email = normalizeEmail(body.email);
+    const password = typeof body.password === 'string' ? body.password : '';
+    const confirmPassword =
+      typeof body.confirmPassword === 'string' ? body.confirmPassword : undefined;
+
+    if (!fullName || fullName.length < 2) {
+      return res.status(400).json({
+        error: 'Name must be at least 2 characters long.',
+        field: 'fullName',
+      });
+    }
+    if (fullName.length > 100) {
+      return res.status(400).json({
+        error: 'Name must be 100 characters or fewer.',
+        field: 'fullName',
+      });
+    }
+
+    if (!email) {
+      return res.status(400).json({
+        error: 'Email address is required.',
+        field: 'email',
+      });
+    }
+    if (!isValidEmail(email)) {
+      return res.status(400).json({
+        error: 'Please enter a valid email address.',
+        field: 'email',
+      });
+    }
+
+    const passwordError = validatePassword(password);
+    if (passwordError) {
+      return res.status(400).json({
+        error: passwordError,
+        field: 'password',
+      });
+    }
+
+    if (confirmPassword !== undefined && password !== confirmPassword) {
+      return res.status(400).json({
+        error: 'Passwords do not match.',
+        field: 'confirmPassword',
+      });
+    }
+
+    const { data: existingUser, error: lookupError } = await supabase
+      .from('users')
+      .select('id')
+      .ilike('email', email)
+      .maybeSingle();
+
+    if (lookupError) throw lookupError;
+    if (existingUser) {
+      return res.status(409).json({
+        error: 'An account with this email is already registered.',
+        field: 'email',
+      });
+    }
+
+    const passwordHash = await hashPassword(password);
+
+    const { data: createdUser, error: insertError } = await supabase
+      .from('users')
+      .insert([
+        {
+          role: 'user',
+          account_type: 'b2b',
+          full_name: fullName,
+          professional_role: 'B2B Buyer',
+          organization_name: 'BLUENEEDLE B2B Client',
+          export_jurisdiction: 'International',
+          email,
+          password_hash: passwordHash,
+          authority_attested: true,
+          metallurgy_updates_opt_in: true,
+          verification_status: 'verified',
+          is_active: true,
+        },
+      ])
+      .select('*')
+      .single();
+
+    if (insertError) {
+      if (insertError.code === '23505') {
+        return res.status(409).json({
+          error: 'An account with this email is already registered.',
+          field: 'email',
+        });
+      }
+      if (insertError.code === '42703' || insertError.code === '23514') {
+        return res.status(500).json({
+          error: 'Database schema update required. Please run backend/database/002_auth_admin_user.sql in Supabase.',
+        });
+      }
+      throw insertError;
+    }
+
+    const token = signAuthToken(createdUser, true);
+    return res.status(201).json({
+      message: 'Account created successfully.',
+      token,
+      user: sanitizeUser(createdUser),
+    });
+  } catch (err) {
+    return res.status(500).json({
+      error: err instanceof Error ? err.message : 'Unable to register account right now.',
+    });
+  }
+});
+
+// Auth: Login with email and password
+app.post('/api/auth/login', async (req, res) => {
+  try {
+    const supabase = getSupabaseClient();
+    const body = req.body && typeof req.body === 'object' ? req.body : {};
+
+    const email = normalizeEmail(body.email);
+    const password = typeof body.password === 'string' ? body.password : '';
+    const rememberMe = body.rememberMe !== false;
+
+    if (!email) {
+      return res.status(400).json({
+        error: 'Email address is required.',
+        field: 'email',
+      });
+    }
+    if (!isValidEmail(email)) {
+      return res.status(400).json({
+        error: 'Please enter a valid email address.',
+        field: 'email',
+      });
+    }
+    if (!password) {
+      return res.status(400).json({
+        error: 'Password is required.',
+        field: 'password',
+      });
+    }
+
+    const { data: user, error: lookupError } = await supabase
+      .from('users')
+      .select('*')
+      .ilike('email', email)
+      .maybeSingle();
+
+    if (lookupError) throw lookupError;
+
+    const passwordMatches = user
+      ? await verifyPassword(password, user.password_hash)
+      : false;
+
+    if (!user || !passwordMatches) {
+      return res.status(401).json({
+        error: 'Invalid email or password. Please verify your credentials and try again.',
+      });
+    }
+
+    if (user.is_active === false) {
+      return res.status(403).json({
+        error: 'This account has been deactivated. Please contact BLUENEEDLE support.',
+      });
+    }
+
+    if (user.verification_status === 'rejected') {
+      return res.status(403).json({
+        error: 'This account has been suspended. Please contact BLUENEEDLE support.',
+      });
+    }
+
+    const nowIso = new Date().toISOString();
+    await supabase
+      .from('users')
+      .update({ last_login_at: nowIso })
+      .eq('id', user.id);
+
+    const token = signAuthToken(user, rememberMe);
+    return res.json({
+      message: 'Signed in successfully.',
+      token,
+      user: sanitizeUser({ ...user, last_login_at: nowIso }),
+    });
+  } catch (err) {
+    return res.status(500).json({
+      error: err instanceof Error ? err.message : 'Authentication service failed. Please try again.',
+    });
+  }
+});
+
+// Auth: Verify current Bearer token
+app.get('/api/auth/me', async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization || '';
+    const token = authHeader.startsWith('Bearer ')
+      ? authHeader.slice(7).trim()
+      : '';
+
+    const decoded = verifyAuthToken(token);
+    if (!decoded) {
+      return res.status(401).json({
+        error: 'Session expired or invalid. Please sign in again.',
+      });
+    }
+
+    const supabase = getSupabaseClient();
+    const { data: user, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', decoded.sub)
+      .maybeSingle();
+
+    if (error) throw error;
+    if (!user || user.is_active === false) {
+      return res.status(401).json({
+        error: 'Account is no longer active. Please sign in again.',
+      });
+    }
+
+    return res.json({ user: sanitizeUser(user) });
+  } catch (err) {
+    return res.status(500).json({
+      error: err instanceof Error ? err.message : 'Unable to verify session.',
+    });
+  }
+});
+
+// Malformed JSON & unhandled error guard
+app.use((err, _req, res, _next) => {
+  if (err && err.type === 'entity.parse.failed') {
+    return res.status(400).json({ error: 'Invalid JSON request payload.' });
+  }
+  return res.status(500).json({
+    error: err instanceof Error ? err.message : 'Unexpected server error.',
+  });
 });
 
 export default app;

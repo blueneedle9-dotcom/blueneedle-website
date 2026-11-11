@@ -1,9 +1,112 @@
-import React, { useState } from 'react';
-import { Link, NavLink, Outlet } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { apiRequest } from '../lib/api';
+import {
+  AuthUser,
+  clearAuth,
+  getAuthHeader,
+  getStoredAuth,
+} from '../lib/auth';
 
 export const AdminLayout: React.FC = () => {
+  const navigate = useNavigate();
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [globalLookup, setGlobalLookup] = useState('');
+  const [guardState, setGuardState] = useState<
+    'checking' | 'authorized' | 'forbidden'
+  >('checking');
+  const [adminUser, setAdminUser] = useState<AuthUser | null>(
+    () => getStoredAuth()?.user || null
+  );
+
+  useEffect(() => {
+    let active = true;
+    const stored = getStoredAuth();
+
+    if (!stored?.token) {
+      navigate('/login?redirect=/admin', { replace: true });
+      return;
+    }
+
+    apiRequest<{ user: AuthUser }>('/api/auth/me', {
+      headers: getAuthHeader(),
+    })
+      .then((res) => {
+        if (!active) return;
+        setAdminUser(res.user);
+        if (res.user.role === 'admin') {
+          setGuardState('authorized');
+        } else {
+          setGuardState('forbidden');
+        }
+      })
+      .catch(() => {
+        if (!active) return;
+        clearAuth();
+        navigate('/login?redirect=/admin', { replace: true });
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [navigate]);
+
+  const handleSignOut = () => {
+    clearAuth();
+    navigate('/login', { replace: true });
+  };
+
+  if (guardState === 'checking') {
+    return (
+      <div className="min-h-screen bg-surface text-on-surface flex items-center justify-center p-6">
+        <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-lg px-6 py-5 flex items-center gap-3 shadow-sm">
+          <span className="material-symbols-outlined text-secondary animate-spin text-[22px]">
+            progress_activity
+          </span>
+          <span className="font-mono text-xs font-semibold uppercase tracking-wider text-on-surface-variant">
+            Verifying Operations Admin Session...
+          </span>
+        </div>
+      </div>
+    );
+  }
+
+  if (guardState === 'forbidden') {
+    return (
+      <div className="min-h-screen bg-surface text-on-surface flex items-center justify-center p-6">
+        <div className="max-w-md w-full bg-surface-container-lowest border border-red-300 rounded-lg p-8 space-y-4 shadow-sm">
+          <div className="flex items-center gap-2.5 text-red-700">
+            <span className="material-symbols-outlined text-[24px]">gpp_bad</span>
+            <span className="font-mono text-xs font-bold uppercase tracking-wider">
+              403 // Admin Clearance Required
+            </span>
+          </div>
+          <h1 className="font-headline text-2xl font-bold text-on-surface">
+            Restricted Operations Area
+          </h1>
+          <p className="text-sm text-on-surface-variant leading-relaxed">
+            Signed in as <span className="font-mono font-semibold">{adminUser?.email}</span>.
+            Administrator privileges are required to access Sialkot Operations Command.
+          </p>
+          <div className="flex flex-wrap gap-3 pt-2">
+            <Link
+              to="/"
+              className="bg-primary hover:bg-primary-container text-on-primary px-4 py-2.5 rounded text-xs font-semibold transition-colors"
+            >
+              Return to Portal Home
+            </Link>
+            <button
+              type="button"
+              onClick={handleSignOut}
+              className="bg-surface-container-low hover:bg-surface-container border border-outline-variant/40 text-on-surface px-4 py-2.5 rounded text-xs font-semibold transition-colors"
+            >
+              Sign In with Admin Account
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const navLinkClass = ({ isActive }: { isActive: boolean }) =>
     isActive
@@ -260,10 +363,10 @@ export const AdminLayout: React.FC = () => {
             <div className="flex items-center gap-space-sm pl-space-xs">
               <div className="hidden md:flex flex-col text-right">
                 <span className="font-label-lg text-label-lg font-semibold text-on-surface leading-tight">
-                  Eng. Tariq Mehmood
+                  {adminUser?.fullName || 'BLUENEEDLE Admin'}
                 </span>
                 <span className="font-label-technical text-label-technical text-secondary">
-                  Chief Metallurgist / QA
+                  {adminUser?.email || 'Operations Administrator'}
                 </span>
               </div>
               <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
@@ -271,6 +374,15 @@ export const AdminLayout: React.FC = () => {
                   person
                 </span>
               </div>
+              <button
+                type="button"
+                onClick={handleSignOut}
+                title="Sign Out"
+                className="ml-1 px-2.5 py-1.5 rounded bg-surface-container-low hover:bg-surface-container border border-outline-variant/30 text-[11px] font-mono font-semibold text-on-surface-variant hover:text-on-surface inline-flex items-center gap-1 transition-colors"
+              >
+                <span className="material-symbols-outlined text-[15px]">logout</span>
+                <span className="hidden sm:inline">Sign Out</span>
+              </button>
             </div>
           </div>
         </header>

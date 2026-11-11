@@ -1,36 +1,109 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { ApiError, apiRequest } from '../lib/api';
+import { AuthResponse, saveAuth, validateEmailInput } from '../lib/auth';
+
+type LoginFieldErrors = {
+  email?: string;
+  password?: string;
+};
 
 export const LoginPage: React.FC<{
   onOpenRfq: (targetLabel?: string) => void;
 }> = ({ onOpenRfq }) => {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
   const [workEmail, setWorkEmail] = useState('');
   const [accountPassword, setAccountPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberWorkstation, setRememberWorkstation] = useState(true);
-  const [authStatus, setAuthStatus] = useState<'idle' | 'verifying' | 'authenticated'>('idle');
+
+  const [authStatus, setAuthStatus] = useState<
+    'idle' | 'verifying' | 'authenticated' | 'error'
+  >('idle');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<LoginFieldErrors>({});
   const [pivNotice, setPivNotice] = useState(false);
-  const timerRef = useRef<number | null>(null);
 
-  useEffect(() => {
-    return () => {
-      if (timerRef.current !== null) {
-        window.clearTimeout(timerRef.current);
-      }
-    };
-  }, []);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!workEmail.trim() || !accountPassword) return;
-    if (timerRef.current !== null) {
-      window.clearTimeout(timerRef.current);
+  const clearErrorState = (field?: keyof LoginFieldErrors) => {
+    if (field) {
+      setFieldErrors((prev) => {
+        if (!prev[field]) return prev;
+        const next = { ...prev };
+        delete next[field];
+        return next;
+      });
     }
+    if (authStatus === 'error') {
+      setAuthStatus('idle');
+    }
+    if (errorMessage) {
+      setErrorMessage(null);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     setPivNotice(false);
+    setErrorMessage(null);
+
+    const nextFieldErrors: LoginFieldErrors = {};
+    const emailError = validateEmailInput(workEmail);
+    if (emailError) {
+      nextFieldErrors.email = emailError;
+    }
+    if (!accountPassword) {
+      nextFieldErrors.password = 'Password is required.';
+    }
+
+    if (Object.keys(nextFieldErrors).length > 0) {
+      setFieldErrors(nextFieldErrors);
+      setAuthStatus('error');
+      setErrorMessage('Please enter both a valid email address and your password.');
+      return;
+    }
+
+    setFieldErrors({});
     setAuthStatus('verifying');
-    timerRef.current = window.setTimeout(() => {
+
+    try {
+      const response = await apiRequest<AuthResponse>('/api/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({
+          email: workEmail.trim().toLowerCase(),
+          password: accountPassword,
+          rememberMe: rememberWorkstation,
+        }),
+      });
+
+      saveAuth(response.token, response.user, rememberWorkstation);
       setAuthStatus('authenticated');
-    }, 1200);
+
+      const redirectTarget = searchParams.get('redirect');
+      const destination =
+        redirectTarget && redirectTarget.startsWith('/')
+          ? redirectTarget
+          : response.user.role === 'admin'
+            ? '/admin'
+            : '/';
+
+      window.setTimeout(() => {
+        navigate(destination, { replace: true });
+      }, 450);
+    } catch (err) {
+      setAuthStatus('error');
+      if (err instanceof ApiError) {
+        if (err.field === 'email' || err.field === 'password') {
+          setFieldErrors({ [err.field]: err.message });
+        }
+        setErrorMessage(err.message);
+      } else {
+        setErrorMessage(
+          'Unexpected authentication error occurred. Please try again.'
+        );
+      }
+    }
   };
 
   return (
@@ -46,7 +119,7 @@ export const LoginPage: React.FC<{
           </div>
           <div className="flex items-center gap-2 text-secondary font-semibold">
             <span className="material-symbols-outlined text-[14px]">lock</span>
-            <span>TLS 1.3 256-Bit HSM Key Encrypted</span>
+            <span>Salted Scrypt + HMAC Session Verification</span>
           </div>
         </div>
       </div>
@@ -57,7 +130,6 @@ export const LoginPage: React.FC<{
           <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-lg overflow-hidden shadow-sm grid grid-cols-1 lg:grid-cols-12">
             {/* Left 5-col Institutional Gateway Panel */}
             <div className="lg:col-span-5 bg-primary-container text-on-primary p-8 lg:p-10 flex flex-col justify-between gap-8 relative overflow-hidden">
-              {/* Precision Reticle SVG */}
               <svg
                 viewBox="0 0 100 100"
                 className="absolute -right-10 -top-10 w-56 h-56 text-white/5 pointer-events-none"
@@ -73,16 +145,16 @@ export const LoginPage: React.FC<{
 
               <div className="space-y-6 relative z-10">
                 <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 border border-white/15 rounded text-[10px] font-mono uppercase tracking-[0.18em] text-secondary-fixed">
-                  B2B Institutional Portal // Secure Access
+                  B2B Trade Portal // Secure Access
                 </div>
 
                 <div>
                   <h1 className="font-headline text-3xl font-bold tracking-tight">
-                    Institutional Client Gateway
+                    BLUENEEDLE Client &amp; Admin Gateway
                   </h1>
                   <p className="text-sm text-on-primary-container mt-2 leading-relaxed">
-                    Authorized access for hospital procurement officers, OEM brand
-                    engineers, and regional medical distributors.
+                    Authorized access for B2B buyers, medical distributors, OEM
+                    partners, and Sialkot operations administrators.
                   </p>
                 </div>
 
@@ -101,7 +173,7 @@ export const LoginPage: React.FC<{
                     {
                       icon: 'request_quote',
                       title: 'Tender Pricing & Active RFQ Records',
-                      desc: 'Track institutional quote revisions and container schedules.',
+                      desc: 'Track B2B quote revisions and container schedules.',
                     },
                   ].map((item) => (
                     <div
@@ -150,12 +222,29 @@ export const LoginPage: React.FC<{
                     Sign In to Your Account
                   </h2>
                   <p className="text-sm text-on-surface-variant mt-1">
-                    Enter your verified institutional credentials to access procurement
-                    manifests.
+                    Enter your registered email and password to access your B2B
+                    account or admin console.
                   </p>
                 </div>
 
-                {authStatus !== 'idle' && (
+                {authStatus === 'error' && errorMessage && (
+                  <div
+                    role="alert"
+                    className="rounded border border-red-300 bg-red-50 p-4 flex items-start gap-3 text-sm text-red-900"
+                  >
+                    <span className="material-symbols-outlined text-red-600 text-[20px] mt-0.5 shrink-0">
+                      error
+                    </span>
+                    <div>
+                      <div className="font-mono text-xs font-bold uppercase tracking-wider">
+                        Sign In Failed
+                      </div>
+                      <p className="text-xs mt-1 leading-relaxed">{errorMessage}</p>
+                    </div>
+                  </div>
+                )}
+
+                {(authStatus === 'verifying' || authStatus === 'authenticated') && (
                   <div
                     role="status"
                     className={`rounded border p-4 flex items-start gap-3 text-sm ${
@@ -176,13 +265,13 @@ export const LoginPage: React.FC<{
                     <div>
                       <div className="font-mono text-xs font-bold uppercase tracking-wider">
                         {authStatus === 'verifying'
-                          ? 'Verifying Institutional Session Token...'
-                          : 'Institutional Token Authenticated'}
+                          ? 'Verifying Credentials...'
+                          : 'Session Authenticated'}
                       </div>
                       <p className="text-xs mt-1">
                         {authStatus === 'verifying'
-                          ? 'Performing HSM handshake against SIALKOT-PK-SEC-01.'
-                          : 'Redirecting to BlueNeedle RFQ Workstation... Active distributor manifest loaded for demo session.'}
+                          ? 'Checking email and password hash against Supabase registry.'
+                          : 'Redirecting you to your BLUENEEDLE workspace...'}
                       </p>
                     </div>
                   </div>
@@ -191,22 +280,22 @@ export const LoginPage: React.FC<{
                 {pivNotice && (
                   <div className="rounded border border-secondary/35 bg-surface-container-low p-3.5 text-xs text-on-surface-variant flex items-center gap-2.5">
                     <span className="material-symbols-outlined text-secondary text-[18px]">
-                      usb
+                      info
                     </span>
                     <span>
-                      PKI / Hardware Security Key reader listening — insert your hospital
-                      PIV smart card or FIDO2 USB token to continue.
+                      Hardware PIV tokens are disabled for standard B2B accounts —
+                      please sign in using your email address and password above.
                     </span>
                   </div>
                 )}
 
-                <form onSubmit={handleSubmit} className="space-y-5">
+                <form onSubmit={handleSubmit} noValidate className="space-y-5">
                   <div>
                     <label
                       htmlFor="workEmail"
                       className="block text-xs font-mono uppercase tracking-wider text-on-surface-variant font-semibold mb-2"
                     >
-                      Work / Institutional Email
+                      Email Address
                     </label>
                     <div className="relative">
                       <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">
@@ -215,13 +304,25 @@ export const LoginPage: React.FC<{
                       <input
                         id="workEmail"
                         type="email"
-                        required
+                        autoComplete="email"
                         value={workEmail}
-                        onChange={(e) => setWorkEmail(e.target.value)}
-                        placeholder="procurement@hospital-network.org"
-                        className="w-full pl-11 pr-4 py-3 bg-surface-container-low border border-outline-variant/40 rounded text-sm text-on-surface placeholder:text-on-surface-variant/60 focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary"
+                        onChange={(e) => {
+                          setWorkEmail(e.target.value);
+                          clearErrorState('email');
+                        }}
+                        placeholder="you@company.com"
+                        className={`w-full pl-11 pr-4 py-3 bg-surface-container-low rounded text-sm text-on-surface placeholder:text-on-surface-variant/60 focus:outline-none ${
+                          fieldErrors.email
+                            ? 'border-2 border-red-500 ring-1 ring-red-400'
+                            : 'border border-outline-variant/40 focus:border-secondary focus:ring-1 focus:ring-secondary'
+                        }`}
                       />
                     </div>
+                    {fieldErrors.email && (
+                      <p className="text-[11px] font-mono text-red-600 mt-1">
+                        {fieldErrors.email}
+                      </p>
+                    )}
                   </div>
 
                   <div>
@@ -229,7 +330,7 @@ export const LoginPage: React.FC<{
                       htmlFor="accountPassword"
                       className="block text-xs font-mono uppercase tracking-wider text-on-surface-variant font-semibold mb-2"
                     >
-                      Portal Passphrase
+                      Password
                     </label>
                     <div className="relative">
                       <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">
@@ -238,11 +339,18 @@ export const LoginPage: React.FC<{
                       <input
                         id="accountPassword"
                         type={showPassword ? 'text' : 'password'}
-                        required
+                        autoComplete="current-password"
                         value={accountPassword}
-                        onChange={(e) => setAccountPassword(e.target.value)}
-                        placeholder="Enter portal passphrase"
-                        className="w-full pl-11 pr-12 py-3 bg-surface-container-low border border-outline-variant/40 rounded text-sm text-on-surface placeholder:text-on-surface-variant/60 focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary"
+                        onChange={(e) => {
+                          setAccountPassword(e.target.value);
+                          clearErrorState('password');
+                        }}
+                        placeholder="Enter your password"
+                        className={`w-full pl-11 pr-12 py-3 bg-surface-container-low rounded text-sm text-on-surface placeholder:text-on-surface-variant/60 focus:outline-none ${
+                          fieldErrors.password
+                            ? 'border-2 border-red-500 ring-1 ring-red-400'
+                            : 'border border-outline-variant/40 focus:border-secondary focus:ring-1 focus:ring-secondary'
+                        }`}
                       />
                       <button
                         type="button"
@@ -255,6 +363,11 @@ export const LoginPage: React.FC<{
                         </span>
                       </button>
                     </div>
+                    {fieldErrors.password && (
+                      <p className="text-[11px] font-mono text-red-600 mt-1">
+                        {fieldErrors.password}
+                      </p>
+                    )}
                   </div>
 
                   <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
@@ -266,7 +379,7 @@ export const LoginPage: React.FC<{
                         className="rounded border-outline-variant text-secondary focus:ring-secondary"
                       />
                       <span className="text-xs font-medium">
-                        Remember Workstation (12h Token)
+                        Keep me signed in (7d vs 12h session)
                       </span>
                     </label>
 
@@ -285,9 +398,9 @@ export const LoginPage: React.FC<{
                       className="sm:col-span-7 bg-primary hover:bg-primary-container disabled:opacity-70 text-on-primary py-3.5 px-6 rounded font-semibold text-sm inline-flex items-center justify-center gap-2 transition-colors shadow-sm"
                     >
                       <span className="material-symbols-outlined text-[18px]">
-                        login
+                        {authStatus === 'verifying' ? 'progress_activity' : 'login'}
                       </span>
-                      Sign In to Portal
+                      {authStatus === 'verifying' ? 'Signing In...' : 'Sign In to Portal'}
                     </button>
 
                     <button
@@ -321,11 +434,10 @@ export const LoginPage: React.FC<{
           <div className="bg-surface-container-low border border-outline-variant/25 rounded-lg p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div className="space-y-1">
               <div className="text-sm font-semibold text-on-surface">
-                New Hospital Network, Surgical Distributor, or OEM Partner?
+                New B2B Buyer, Surgical Distributor, or OEM Partner?
               </div>
               <p className="text-xs text-on-surface-variant">
-                Apply for wholesale pricing tier provisioning or submit an immediate
-                institutional tender request.
+                Create an account in seconds or submit a direct tender inquiry.
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-3 shrink-0">
@@ -333,11 +445,11 @@ export const LoginPage: React.FC<{
                 to="/create-account"
                 className="bg-surface-container-lowest hover:bg-surface-container border border-outline-variant/40 text-on-surface px-4 py-2.5 rounded text-xs font-semibold transition-colors"
               >
-                Request Access / Create Account
+                Create Account
               </Link>
               <button
                 type="button"
-                onClick={() => onOpenRfq('Direct Institutional Tender RFQ')}
+                onClick={() => onOpenRfq('Direct B2B Tender RFQ')}
                 className="bg-secondary hover:bg-secondary/90 text-on-secondary px-4 py-2.5 rounded text-xs font-semibold transition-colors"
               >
                 Direct Tender RFQ

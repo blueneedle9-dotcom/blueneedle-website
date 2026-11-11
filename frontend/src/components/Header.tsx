@@ -1,6 +1,12 @@
-import React, { useState } from "react";
-import { Link, NavLink } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { LOGO_URL } from "../data/catalog";
+import {
+  AUTH_CHANGE_EVENT,
+  AuthUser,
+  clearAuth,
+  getStoredAuth,
+} from "../lib/auth";
 
 interface HeaderProps {
   onOpenRfq: (targetLabel?: string) => void;
@@ -8,7 +14,29 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({ onOpenRfq, manifestCount }) => {
+  const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState<AuthUser | null>(
+    () => getStoredAuth()?.user || null
+  );
+
+  useEffect(() => {
+    const syncAuth = () => {
+      setCurrentUser(getStoredAuth()?.user || null);
+    };
+    window.addEventListener(AUTH_CHANGE_EVENT, syncAuth);
+    window.addEventListener("storage", syncAuth);
+    return () => {
+      window.removeEventListener(AUTH_CHANGE_EVENT, syncAuth);
+      window.removeEventListener("storage", syncAuth);
+    };
+  }, []);
+
+  const handleLogout = () => {
+    clearAuth();
+    setMobileMenuOpen(false);
+    navigate("/login");
+  };
 
   const navLinkClass = ({ isActive }: { isActive: boolean }) =>
     isActive
@@ -184,18 +212,49 @@ export const Header: React.FC<HeaderProps> = ({ onOpenRfq, manifestCount }) => {
 
         {/* Right Actions */}
         <div className="flex items-center gap-space-sm md:gap-space-md">
-          <Link
-            className="hidden sm:inline-block font-label-lg text-label-lg text-on-surface-variant hover:text-on-surface transition-colors px-space-sm py-space-xs"
-            to="/login"
-          >
-            Login
-          </Link>
-          <Link
-            className="hidden xl:inline-block font-label-lg text-label-lg text-on-surface-variant hover:text-on-surface transition-colors px-space-sm py-space-xs"
-            to="/create-account"
-          >
-            Create Account
-          </Link>
+          {currentUser ? (
+            <>
+              {currentUser.role === "admin" && (
+                <Link
+                  className="hidden sm:inline-flex items-center gap-1 font-label-lg text-label-lg text-secondary hover:text-primary transition-colors px-space-sm py-space-xs"
+                  to="/admin"
+                >
+                  <span className="material-symbols-outlined text-[16px]">
+                    admin_panel_settings
+                  </span>
+                  Admin
+                </Link>
+              )}
+              <span
+                className="hidden xl:inline-block font-label-technical text-label-technical text-on-surface-variant px-space-xs"
+                title={currentUser.email}
+              >
+                {currentUser.fullName}
+              </span>
+              <button
+                className="hidden sm:inline-block font-label-lg text-label-lg text-on-surface-variant hover:text-on-surface transition-colors px-space-sm py-space-xs"
+                onClick={handleLogout}
+                type="button"
+              >
+                Sign Out
+              </button>
+            </>
+          ) : (
+            <>
+              <Link
+                className="hidden sm:inline-block font-label-lg text-label-lg text-on-surface-variant hover:text-on-surface transition-colors px-space-sm py-space-xs"
+                to="/login"
+              >
+                Login
+              </Link>
+              <Link
+                className="hidden xl:inline-block font-label-lg text-label-lg text-on-surface-variant hover:text-on-surface transition-colors px-space-sm py-space-xs"
+                to="/create-account"
+              >
+                Create Account
+              </Link>
+            </>
+          )}
           <button
             className="relative bg-primary-container text-on-primary hover:bg-primary transition-colors font-label-lg text-label-lg px-space-md py-space-sm rounded-lg tracking-wide uppercase shadow-[0_4px_12px_-2px_rgba(20,43,69,0.06)]"
             onClick={() => onOpenRfq()}
@@ -261,20 +320,43 @@ export const Header: React.FC<HeaderProps> = ({ onOpenRfq, manifestCount }) => {
           >
             About Us
           </Link>
-          <Link
-            className="py-2 font-label-lg text-primary"
-            onClick={() => setMobileMenuOpen(false)}
-            to="/login"
-          >
-            Institutional Login
-          </Link>
-          <Link
-            className="py-2 font-label-lg text-primary"
-            onClick={() => setMobileMenuOpen(false)}
-            to="/create-account"
-          >
-            Create Account
-          </Link>
+          {currentUser ? (
+            <>
+              {currentUser.role === "admin" && (
+                <Link
+                  className="py-2 font-label-lg text-secondary"
+                  onClick={() => setMobileMenuOpen(false)}
+                  to="/admin"
+                >
+                  Operations Admin Console
+                </Link>
+              )}
+              <button
+                className="py-2 font-label-lg text-primary text-left"
+                onClick={handleLogout}
+                type="button"
+              >
+                Sign Out ({currentUser.fullName})
+              </button>
+            </>
+          ) : (
+            <>
+              <Link
+                className="py-2 font-label-lg text-primary"
+                onClick={() => setMobileMenuOpen(false)}
+                to="/login"
+              >
+                Login
+              </Link>
+              <Link
+                className="py-2 font-label-lg text-primary"
+                onClick={() => setMobileMenuOpen(false)}
+                to="/create-account"
+              >
+                Create Account
+              </Link>
+            </>
+          )}
         </div>
       )}
     </header>

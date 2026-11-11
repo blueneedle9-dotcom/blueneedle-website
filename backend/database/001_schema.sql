@@ -131,18 +131,19 @@ CREATE TABLE IF NOT EXISTS public.product_images (
 -- =========================================================
 CREATE TABLE IF NOT EXISTS public.users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  account_type TEXT NOT NULL CHECK (
-    account_type IN ('hospital', 'distributor', 'oem')
+  role TEXT NOT NULL DEFAULT 'user' CHECK (role IN ('user', 'admin')),
+  account_type TEXT NOT NULL DEFAULT 'b2b' CHECK (
+    account_type IN ('b2b', 'hospital', 'distributor', 'oem')
   ),
   full_name TEXT NOT NULL,
-  professional_role TEXT NOT NULL,
-  organization_name TEXT NOT NULL,
-  export_jurisdiction TEXT NOT NULL,
+  professional_role TEXT NOT NULL DEFAULT 'B2B Buyer',
+  organization_name TEXT NOT NULL DEFAULT 'BLUENEEDLE B2B Client',
+  export_jurisdiction TEXT NOT NULL DEFAULT 'International',
   email TEXT NOT NULL UNIQUE,
   password_hash TEXT NOT NULL,
-  authority_attested BOOLEAN NOT NULL DEFAULT FALSE,
+  authority_attested BOOLEAN NOT NULL DEFAULT TRUE,
   metallurgy_updates_opt_in BOOLEAN NOT NULL DEFAULT TRUE,
-  verification_status TEXT NOT NULL DEFAULT 'pending' CHECK (
+  verification_status TEXT NOT NULL DEFAULT 'verified' CHECK (
     verification_status IN ('pending', 'verified', 'rejected')
   ),
   is_active BOOLEAN NOT NULL DEFAULT TRUE,
