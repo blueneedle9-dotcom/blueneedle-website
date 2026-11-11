@@ -27,7 +27,7 @@ ALTER TABLE public.users
   ALTER COLUMN authority_attested SET DEFAULT TRUE,
   ALTER COLUMN verification_status SET DEFAULT 'verified';
 
--- 2. Create / Update initial Admin user (admin123@gmail.com / Admmin123@)
+-- 2. Create / Update initial Admin user (admin123@gmail.com / Admin123@)
 -- Password hashed using Node crypto.scrypt with random 16-byte salt
 INSERT INTO public.users (
   role,
@@ -51,7 +51,7 @@ VALUES (
   'BLUENEEDLE Surgical',
   'International',
   'admin123@gmail.com',
-  'scrypt$07c11a9e8464710a807856788c4e263c$3c9341f4c9ebeae97e4020c78ee7de07a396f383d47edb5de1dafc0f395b14038051ec9fa4bdeea0652dcda5b464b3173d9418d36b51d0dcf2eced2d5a71faac',
+  'scrypt$14014d7cc4c5716204ad661ecb99eff8$d3aaa4408b751220a3f1093f3620dd11d34e3003108c51b2882fe90c86b7e6af1eb169ad78ce04c0eaebabbc96dba6d972dda79e04d7617ca5be9c9fa6bb5577',
   TRUE,
   TRUE,
   'verified',

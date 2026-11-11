@@ -3,7 +3,7 @@ import { getSupabaseClient } from '../src/config/supabase.js';
 import { hashPassword, normalizeEmail } from '../src/utils/auth.js';
 
 const ADMIN_EMAIL = normalizeEmail(process.env.ADMIN_EMAIL || 'admin123@gmail.com');
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Admmin123@';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Admin123@';
 const ADMIN_NAME = process.env.ADMIN_NAME || 'BLUENEEDLE Admin';
 
 async function main() {
