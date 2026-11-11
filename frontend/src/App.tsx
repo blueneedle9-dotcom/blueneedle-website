@@ -12,9 +12,11 @@ import { LoginPage } from './pages/LoginPage';
 import { CreateAccountPage } from './pages/CreateAccountPage';
 import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
 import { AdminDashboardPage } from './pages/admin/AdminDashboardPage';
-import { AdminPatternsPage } from './pages/admin/AdminPatternsPage';
-import { AdminRfqPage } from './pages/admin/AdminRfqPage';
-import { AdminQaPage } from './pages/admin/AdminQaPage';
+import { AdminProductsPage } from './pages/admin/AdminProductsPage';
+import { AdminCategoriesPage } from './pages/admin/AdminCategoriesPage';
+import { AdminInquiriesPage } from './pages/admin/AdminInquiriesPage';
+import { AdminContentPage } from './pages/admin/AdminContentPage';
+import { AdminSettingsPage } from './pages/admin/AdminSettingsPage';
 
 const ScrollManager: React.FC = () => {
   const { pathname, hash } = useLocation();
@@ -122,9 +124,12 @@ const AppShell: React.FC = () => {
 
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboardPage />} />
-          <Route path="patterns" element={<AdminPatternsPage />} />
-          <Route path="rfq" element={<AdminRfqPage />} />
-          <Route path="qa" element={<AdminQaPage />} />
+          <Route path="products" element={<AdminProductsPage />} />
+          <Route path="categories" element={<AdminCategoriesPage />} />
+          <Route path="inquiries" element={<AdminInquiriesPage />} />
+          <Route path="content" element={<AdminContentPage />} />
+          <Route path="profile" element={<AdminSettingsPage />} />
+          <Route path="settings" element={<AdminSettingsPage />} />
         </Route>
       </Routes>
 

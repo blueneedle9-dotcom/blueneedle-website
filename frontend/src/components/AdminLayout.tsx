@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
+import React, { useEffect, useRef, useState } from 'react';
+import { Link, NavLink, Outlet, useNavigate, useOutletContext } from 'react-router-dom';
 import { apiRequest } from '../lib/api';
 import {
   AuthUser,
@@ -8,10 +8,43 @@ import {
   getStoredAuth,
 } from '../lib/auth';
 
+export interface AdminOutletContext {
+  adminUser: AuthUser | null;
+  globalSearch: string;
+  setGlobalSearch: React.Dispatch<React.SetStateAction<string>>;
+}
+
+export function useAdminContext() {
+  return useOutletContext<AdminOutletContext>();
+}
+
+interface SidebarNavItem {
+  to: string;
+  label: string;
+  icon: string;
+  badge?: string;
+  end?: boolean;
+}
+
+const SIDEBAR_NAV: SidebarNavItem[] = [
+  { to: '/admin', label: 'Dashboard', icon: 'grid_view', end: true },
+  { to: '/admin/products', label: 'Products', icon: 'inventory_2' },
+  { to: '/admin/categories', label: 'Categories', icon: 'account_tree' },
+  { to: '/admin/inquiries', label: 'Inquiries', icon: 'mail', badge: '12' },
+  { to: '/admin/content', label: 'Website Content', icon: 'web' },
+  { to: '/admin/profile', label: 'Admin Profile', icon: 'account_circle' },
+  { to: '/admin/settings', label: 'Settings', icon: 'settings' },
+];
+
 export const AdminLayout: React.FC = () => {
   const navigate = useNavigate();
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-  const [globalLookup, setGlobalLookup] = useState('');
+  const [globalSearch, setGlobalSearch] = useState('');
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+
   const [guardState, setGuardState] = useState<
     'checking' | 'authorized' | 'forbidden'
   >('checking');
@@ -51,6 +84,17 @@ export const AdminLayout: React.FC = () => {
     };
   }, [navigate]);
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   const handleSignOut = () => {
     clearAuth();
     navigate('/login', { replace: true });
@@ -58,14 +102,19 @@ export const AdminLayout: React.FC = () => {
 
   if (guardState === 'checking') {
     return (
-      <div className="min-h-screen bg-surface text-on-surface flex items-center justify-center p-6">
-        <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-lg px-6 py-5 flex items-center gap-3 shadow-sm">
-          <span className="material-symbols-outlined text-secondary animate-spin text-[22px]">
-            progress_activity
-          </span>
-          <span className="font-mono text-xs font-semibold uppercase tracking-wider text-on-surface-variant">
-            Verifying Operations Admin Session...
-          </span>
+      <div className="min-h-screen bg-surface flex items-center justify-center p-space-lg">
+        <div className="bg-surface-container-lowest p-space-xl rounded-xl shadow-sm flex flex-col items-center gap-3 text-center max-w-sm w-full">
+          <div className="w-10 h-10 rounded-lg bg-primary-container flex items-center justify-center text-on-primary animate-pulse">
+            <span className="material-symbols-outlined text-[22px]">
+              precision_manufacturing
+            </span>
+          </div>
+          <p className="font-headline-sm text-headline-sm text-primary font-semibold">
+            Verifying Executive Session
+          </p>
+          <p className="font-body-sm text-body-sm text-on-surface-variant">
+            Authenticating Blueneedle Catalog &amp; Content CMS clearance...
+          </p>
         </div>
       </div>
     );
@@ -73,34 +122,39 @@ export const AdminLayout: React.FC = () => {
 
   if (guardState === 'forbidden') {
     return (
-      <div className="min-h-screen bg-surface text-on-surface flex items-center justify-center p-6">
-        <div className="max-w-md w-full bg-surface-container-lowest border border-red-300 rounded-lg p-8 space-y-4 shadow-sm">
-          <div className="flex items-center gap-2.5 text-red-700">
-            <span className="material-symbols-outlined text-[24px]">gpp_bad</span>
-            <span className="font-mono text-xs font-bold uppercase tracking-wider">
-              403 // Admin Clearance Required
+      <div className="min-h-screen bg-surface flex items-center justify-center p-space-lg">
+        <div className="bg-surface-container-lowest p-space-xl rounded-xl shadow-sm flex flex-col items-center gap-4 text-center max-w-md w-full">
+          <div className="w-12 h-12 rounded-xl bg-error-container flex items-center justify-center text-on-error-container">
+            <span className="material-symbols-outlined text-[26px]">
+              gpp_maybe
             </span>
           </div>
-          <h1 className="font-headline text-2xl font-bold text-on-surface">
-            Restricted Operations Area
-          </h1>
-          <p className="text-sm text-on-surface-variant leading-relaxed">
-            Signed in as <span className="font-mono font-semibold">{adminUser?.email}</span>.
-            Administrator privileges are required to access Sialkot Operations Command.
-          </p>
-          <div className="flex flex-wrap gap-3 pt-2">
+          <div className="space-y-1">
+            <span className="font-label-code text-label-code text-error uppercase tracking-wider font-semibold">
+              403 • Restricted Administrative Gateway
+            </span>
+            <h1 className="font-headline-sm text-headline-sm text-primary font-bold">
+              Administrator Privileges Required
+            </h1>
+            <p className="font-body-sm text-body-sm text-on-surface-variant">
+              Signed in as <span className="font-semibold text-primary">{adminUser?.email}</span>{' '}
+              (role: <span className="font-label-code">{adminUser?.role || 'buyer'}</span>).
+              Only authorized Blueneedle administrators can access this console.
+            </p>
+          </div>
+          <div className="flex items-center gap-3 pt-2">
             <Link
               to="/"
-              className="bg-primary hover:bg-primary-container text-on-primary px-4 py-2.5 rounded text-xs font-semibold transition-colors"
+              className="px-4 py-2 rounded-lg bg-surface-container-low text-secondary hover:bg-surface-container-high font-label-lg text-label-lg transition-colors"
             >
-              Return to Portal Home
+              Return to Storefront
             </Link>
             <button
               type="button"
               onClick={handleSignOut}
-              className="bg-surface-container-low hover:bg-surface-container border border-outline-variant/40 text-on-surface px-4 py-2.5 rounded text-xs font-semibold transition-colors"
+              className="px-4 py-2 rounded-lg bg-primary-container text-on-primary hover:bg-primary font-label-lg text-label-lg transition-colors"
             >
-              Sign In with Admin Account
+              Sign Out &amp; Switch Account
             </button>
           </div>
         </div>
@@ -108,287 +162,327 @@ export const AdminLayout: React.FC = () => {
     );
   }
 
-  const navLinkClass = ({ isActive }: { isActive: boolean }) =>
-    isActive
-      ? 'flex items-center gap-space-sm px-space-md py-2.5 transition-all bg-primary-container text-on-primary font-medium rounded-lg shadow-sm'
-      : 'flex items-center gap-space-sm px-space-md py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all';
+  const displayName = adminUser?.fullName || 'Tariq Mehmood';
+  const displayRole =
+    adminUser?.email === 'admin123@gmail.com'
+      ? 'Lead Catalog Admin'
+      : adminUser?.email || 'Lead Catalog Admin';
 
   return (
-    <div className="min-h-screen bg-surface font-body-md text-on-surface antialiased">
-      {/* Mobile Backdrop */}
+    <div className="bg-surface font-body-md text-on-surface antialiased min-h-screen">
+      {/* Mobile Sidebar Backdrop */}
       {mobileSidebarOpen && (
         <div
-          className="fixed inset-0 bg-primary/40 backdrop-blur-xs z-40 lg:hidden"
+          className="fixed inset-0 bg-primary/40 backdrop-blur-sm z-40 lg:hidden"
           onClick={() => setMobileSidebarOpen(false)}
         />
       )}
 
-      {/* Left Fixed Sidebar */}
+      {/* Fixed Sidebar */}
       <aside
-        className={`fixed left-0 top-0 h-full w-72 bg-surface-container-lowest shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-50 flex flex-col justify-between select-none transition-transform duration-200 ${
-          mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+        className={`fixed left-0 top-0 h-full w-72 bg-surface-container-lowest shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-50 flex flex-col justify-between transition-transform duration-200 lg:translate-x-0 ${
+          mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         <div className="flex flex-col overflow-y-auto">
-          <div className="h-16 px-space-md flex items-center justify-between bg-surface-container-lowest">
-            <Link to="/admin" className="flex items-center gap-space-sm">
-              <div className="w-7 h-7 bg-primary rounded flex items-center justify-center">
-                <span className="material-symbols-outlined text-on-primary text-[18px]">
+          <div className="h-16 px-space-lg flex items-center justify-between bg-surface-container-lowest shadow-[0_1px_8px_rgba(0,0,0,0.04)] shrink-0">
+            <Link
+              to="/admin"
+              className="flex items-center gap-space-sm"
+              onClick={() => setMobileSidebarOpen(false)}
+            >
+              <div className="w-9 h-9 rounded-lg bg-primary-container flex items-center justify-center">
+                <span className="material-symbols-outlined text-primary-fixed text-[20px]">
                   precision_manufacturing
                 </span>
               </div>
               <div className="flex flex-col">
-                <span className="font-headline-sm text-headline-sm font-semibold tracking-tight text-primary leading-none">
+                <span className="font-headline-sm text-headline-sm text-primary font-bold tracking-tight uppercase leading-none">
                   BLUENEEDLE
                 </span>
-                <span className="font-label-code text-label-code uppercase tracking-wider text-secondary mt-0.5">
-                  Sialkot Operations
+                <span className="font-label-technical text-label-technical text-secondary tracking-wider uppercase mt-1 leading-none">
+                  CATALOG &amp; CONTENT CMS
                 </span>
               </div>
             </Link>
-            <span className="font-label-code text-label-code px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface font-medium">
-              v4.2-MDR
+            <button
+              type="button"
+              onClick={() => setMobileSidebarOpen(false)}
+              className="lg:hidden p-1.5 rounded text-on-surface-variant hover:bg-surface-container-high"
+              aria-label="Close sidebar"
+            >
+              <span className="material-symbols-outlined text-[20px]">close</span>
+            </button>
+          </div>
+
+          <div className="px-space-md py-space-sm">
+            <span className="font-label-code text-label-code text-on-surface-variant uppercase tracking-wider px-space-sm">
+              Operations &amp; Catalog
             </span>
           </div>
 
-          <div className="px-space-md py-space-sm bg-surface-container-low">
-            <div className="flex items-center justify-between text-secondary mb-1">
-              <span className="font-label-technical text-label-technical uppercase">
-                Plant Facility
-              </span>
-              <span className="font-label-code text-label-code font-medium text-on-surface">
-                SKT-FAC-01
-              </span>
-            </div>
-            <div className="flex items-center gap-space-xs">
-              <span className="w-2 h-2 rounded-full bg-secondary-container ring-2 ring-primary-container animate-pulse" />
-              <span className="font-label-technical text-label-technical text-on-surface">
-                Zone A: Forging &amp; Forging Die Lab
-              </span>
-            </div>
-          </div>
-
-          <div className="px-space-md pt-space-md pb-space-xs">
-            <span className="font-label-code text-label-code uppercase text-on-surface-variant tracking-wider font-semibold">
-              Operations Command
-            </span>
-          </div>
-
-          <nav className="flex flex-col gap-1 px-space-sm">
-            <NavLink
-              to="/admin"
-              end
-              className={navLinkClass}
-              onClick={() => setMobileSidebarOpen(false)}
-            >
-              <span className="material-symbols-outlined text-[20px]">
-                grid_view
-              </span>
-              <span className="font-label-lg text-label-lg">
-                Dashboard &amp; Production
-              </span>
-            </NavLink>
-
-            <NavLink
-              to="/admin/patterns"
-              className={navLinkClass}
-              onClick={() => setMobileSidebarOpen(false)}
-            >
-              <span className="material-symbols-outlined text-[20px]">
-                architecture
-              </span>
-              <span className="font-label-lg text-label-lg">
-                Catalog &amp; DIN Patterns
-              </span>
-            </NavLink>
-
-            <NavLink
-              to="/admin/rfq"
-              className={navLinkClass}
-              onClick={() => setMobileSidebarOpen(false)}
-            >
-              <span className="material-symbols-outlined text-[20px]">
-                request_quote
-              </span>
-              <span className="font-label-lg text-label-lg">
-                RFQ &amp; Tender Matrix
-              </span>
-            </NavLink>
-
-            <Link
-              to="/admin#logistics"
-              className="flex items-center gap-space-sm px-space-md py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all"
-              onClick={() => setMobileSidebarOpen(false)}
-            >
-              <span className="material-symbols-outlined text-[20px]">
-                local_shipping
-              </span>
-              <span className="font-label-lg text-label-lg">
-                Export Logistics (SKT)
-              </span>
-            </Link>
-
-            <NavLink
-              to="/admin/qa"
-              className={navLinkClass}
-              onClick={() => setMobileSidebarOpen(false)}
-            >
-              <span className="material-symbols-outlined text-[20px]">
-                verified
-              </span>
-              <span className="font-label-lg text-label-lg">
-                QA &amp; ISO/MDR Heat Lots
-              </span>
-            </NavLink>
-          </nav>
-
-          <div className="px-space-md pt-space-lg pb-space-xs">
-            <span className="font-label-code text-label-code uppercase text-on-surface-variant tracking-wider font-semibold">
-              Administration
-            </span>
-          </div>
-
-          <nav className="flex flex-col gap-1 px-space-sm">
-            <Link
-              to="/admin/qa#audit-vault"
-              className="flex items-center gap-space-sm px-space-md py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all"
-              onClick={() => setMobileSidebarOpen(false)}
-            >
-              <span className="material-symbols-outlined text-[20px]">
-                admin_panel_settings
-              </span>
-              <span className="font-label-lg text-label-lg">
-                Access &amp; Master Config
-              </span>
-            </Link>
-            <Link
-              to="/"
-              className="flex items-center gap-space-sm px-space-md py-2.5 rounded-lg text-secondary hover:bg-surface-container-high hover:text-primary transition-all"
-              onClick={() => setMobileSidebarOpen(false)}
-            >
-              <span className="material-symbols-outlined text-[20px]">
-                public
-              </span>
-              <span className="font-label-lg text-label-lg">
-                Public Export Portal
-              </span>
-            </Link>
+          <nav className="flex flex-col gap-1 px-space-md">
+            {SIDEBAR_NAV.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.end}
+                onClick={() => setMobileSidebarOpen(false)}
+                className={({ isActive }) =>
+                  isActive
+                    ? 'flex items-center gap-space-sm px-space-sm py-2 rounded-lg transition-colors bg-primary-container text-on-primary font-semibold shadow-sm font-label-lg text-label-lg'
+                    : 'flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-label-lg text-label-lg'
+                }
+              >
+                <span className="material-symbols-outlined text-[20px]">
+                  {item.icon}
+                </span>
+                <span className="flex-1">{item.label}</span>
+                {item.badge && (
+                  <span className="px-1.5 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-code text-label-code">
+                    {item.badge}
+                  </span>
+                )}
+              </NavLink>
+            ))}
           </nav>
         </div>
 
-        <div className="p-space-md bg-surface-container-low flex flex-col gap-space-sm">
-          <div className="flex items-center justify-between">
-            <span className="font-label-technical text-label-technical text-secondary">
-              Metallurgical Lab
-            </span>
-            <span className="font-label-code text-label-code px-1.5 py-0.5 rounded bg-surface-container-highest text-on-surface">
-              AISI 420B / 440C
-            </span>
-          </div>
-          <div className="w-full bg-surface-container-highest rounded-full h-1.5 overflow-hidden">
-            <div
-              className="bg-secondary h-full rounded-full"
-              style={{ width: '88%' }}
-            />
-          </div>
-          <div className="flex items-center justify-between text-on-surface-variant font-label-code text-label-code">
-            <span>Vacuum Furnace Q3</span>
-            <span className="font-semibold text-on-surface">
-              54 HRC Calibrated
+        <div className="p-space-md flex flex-col gap-space-sm bg-surface-container-low shrink-0">
+          <div className="flex items-center justify-between px-space-sm py-space-xs rounded bg-surface-container-lowest shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-secondary" />
+              <span className="font-label-code text-label-code text-secondary font-medium">
+                BLUENEEDLE v2.4
+              </span>
+            </div>
+            <span className="font-label-technical text-label-technical text-on-surface-variant uppercase">
+              LIVE
             </span>
           </div>
+          <button
+            type="button"
+            onClick={handleSignOut}
+            className="w-full flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-error-container hover:text-on-error-container transition-colors font-label-lg text-label-lg text-left"
+          >
+            <span className="material-symbols-outlined text-[20px]">logout</span>
+            <span>Logout</span>
+          </button>
         </div>
       </aside>
 
-      {/* Main Content Area */}
-      <div className="lg:pl-72">
-        <header className="fixed top-0 left-0 lg:left-72 right-0 h-16 bg-surface-container-lowest/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 px-space-md lg:px-space-lg flex items-center justify-between gap-space-md">
-          <div className="flex items-center gap-space-sm flex-1 max-w-xl">
+      {/* Main Content Shell */}
+      <div className="lg:pl-72 flex flex-col min-h-screen">
+        <header className="fixed top-0 left-0 lg:left-72 right-0 h-16 bg-surface-container-lowest/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 flex items-center justify-between px-space-md lg:px-space-lg">
+          <div className="flex items-center gap-space-sm">
             <button
               type="button"
-              aria-label="Toggle Admin Navigation"
-              onClick={() => setMobileSidebarOpen((prev) => !prev)}
-              className="lg:hidden p-2 rounded bg-surface-container-low text-primary"
+              onClick={() => setMobileSidebarOpen(true)}
+              className="lg:hidden p-2 rounded-lg text-primary hover:bg-surface-container-high transition-colors"
+              aria-label="Open navigation"
             >
-              <span className="material-symbols-outlined text-[20px]">
-                menu
-              </span>
+              <span className="material-symbols-outlined text-[22px]">menu</span>
             </button>
-            <div className="relative w-full">
-              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">
+            <span className="font-label-technical text-label-technical text-secondary uppercase tracking-widest hidden sm:inline">
+              SYSTEM CORE
+            </span>
+            <span className="font-label-md text-label-md text-outline hidden sm:inline">
+              /
+            </span>
+            <span className="font-headline-sm text-headline-sm text-primary font-semibold tracking-tight">
+              Admin Console
+            </span>
+          </div>
+
+          <div className="flex-1 max-w-md mx-space-sm md:mx-space-lg">
+            <div className="relative flex items-center">
+              <span className="material-symbols-outlined absolute left-3 text-secondary text-[18px]">
                 search
               </span>
               <input
-                value={globalLookup}
-                onChange={(e) => setGlobalLookup(e.target.value)}
-                className="w-full h-10 pl-10 pr-space-md bg-surface-container-low rounded font-body-sm text-body-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:bg-surface-container-lowest"
-                placeholder="Lookup DIN code, Tender RFQ, Heat Lot #, or SKU..."
+                ref={searchInputRef}
+                value={globalSearch}
+                onChange={(e) => setGlobalSearch(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && globalSearch.trim()) {
+                    navigate('/admin/products');
+                  }
+                }}
+                className="w-full pl-9 pr-14 py-1.5 rounded-lg bg-surface-container-low text-on-surface placeholder:text-on-surface-variant font-body-sm text-body-sm focus:outline-none focus:bg-surface-container-lowest focus:ring-1 focus:ring-secondary transition-all"
+                placeholder="Search products, categories, inquiries..."
                 type="text"
               />
+              <kbd className="hidden sm:inline-block absolute right-3 px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant font-label-code text-label-code">
+                Ctrl K
+              </kbd>
             </div>
           </div>
 
-          <div className="flex items-center gap-space-md">
-            <div className="hidden xl:flex items-center gap-space-xs px-space-sm py-1 rounded bg-surface-container-low">
-              <span className="w-2 h-2 rounded-full bg-secondary" />
-              <span className="font-label-technical text-label-technical text-on-surface font-medium">
-                SAP ERP Sync:
-              </span>
-              <span className="font-label-code text-label-code text-secondary">
-                Active (2m ago)
-              </span>
-            </div>
-            <div className="hidden sm:flex items-center gap-space-xs px-space-sm py-1 rounded bg-surface-container">
-              <span className="material-symbols-outlined text-[18px] text-primary">
-                schedule
-              </span>
-              <span className="font-label-technical text-label-technical text-on-surface font-semibold uppercase">
-                Shift B (Evening)
-              </span>
-              <span className="font-label-code text-label-code text-on-surface-variant">
-                | Crew: 142
-              </span>
-            </div>
-            <button
-              aria-label="Tender alerts"
-              type="button"
-              className="relative p-2 rounded hover:bg-surface-container-low text-on-surface-variant hover:text-on-surface transition-colors"
+          <div className="flex items-center gap-space-sm md:gap-space-md relative">
+            <Link
+              to="/"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-low text-secondary hover:bg-surface-container-high hover:text-on-surface transition-colors font-label-technical text-label-technical"
+              title="View Live Storefront"
             >
-              <span className="material-symbols-outlined text-[22px]">
-                notifications
+              <span className="material-symbols-outlined text-[16px]">
+                open_in_new
               </span>
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-error" />
-            </button>
-            <div className="h-6 w-px bg-surface-container-high hidden sm:block" />
-            <div className="flex items-center gap-space-sm pl-space-xs">
-              <div className="hidden md:flex flex-col text-right">
-                <span className="font-label-lg text-label-lg font-semibold text-on-surface leading-tight">
-                  {adminUser?.fullName || 'BLUENEEDLE Admin'}
-                </span>
-                <span className="font-label-technical text-label-technical text-secondary">
-                  {adminUser?.email || 'Operations Administrator'}
-                </span>
-              </div>
-              <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-                <span className="material-symbols-outlined text-on-primary text-[18px]">
-                  person
-                </span>
-              </div>
+              <span className="hidden sm:inline">Live Site</span>
+            </Link>
+
+            <div className="relative">
               <button
                 type="button"
-                onClick={handleSignOut}
-                title="Sign Out"
-                className="ml-1 px-2.5 py-1.5 rounded bg-surface-container-low hover:bg-surface-container border border-outline-variant/30 text-[11px] font-mono font-semibold text-on-surface-variant hover:text-on-surface inline-flex items-center gap-1 transition-colors"
+                onClick={() => {
+                  setNotificationsOpen((prev) => !prev);
+                  setUserMenuOpen(false);
+                }}
+                className="relative p-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors"
+                aria-label="Notifications"
               >
-                <span className="material-symbols-outlined text-[15px]">logout</span>
-                <span className="hidden sm:inline">Sign Out</span>
+                <span className="material-symbols-outlined text-[20px]">
+                  notifications
+                </span>
+                <span className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-error text-on-error font-label-code text-[10px] leading-4 text-center font-bold">
+                  3
+                </span>
               </button>
+
+              {notificationsOpen && (
+                <div className="absolute right-0 mt-2 w-80 bg-surface-container-lowest rounded-xl shadow-lg border border-outline-variant/20 p-3 z-50 space-y-2">
+                  <div className="flex items-center justify-between pb-2 border-b border-surface-container">
+                    <span className="font-label-technical text-label-technical uppercase text-primary font-semibold">
+                      System Alerts (3)
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setNotificationsOpen(false)}
+                      className="text-on-surface-variant hover:text-primary font-label-code text-[11px]"
+                    >
+                      Close
+                    </button>
+                  </div>
+                  <Link
+                    to="/admin/inquiries"
+                    onClick={() => setNotificationsOpen(false)}
+                    className="block p-2 rounded-lg hover:bg-surface-container-low transition-colors"
+                  >
+                    <p className="font-label-lg text-label-lg text-primary font-semibold">
+                      New RFQ: Charité Universitätsmedizin
+                    </p>
+                    <p className="font-body-sm text-body-sm text-on-surface-variant">
+                      350 Units DIN 1.4021 requested by Dr. Julian Vogel
+                    </p>
+                  </Link>
+                  <Link
+                    to="/admin/products"
+                    onClick={() => setNotificationsOpen(false)}
+                    className="block p-2 rounded-lg hover:bg-surface-container-low transition-colors"
+                  >
+                    <p className="font-label-lg text-label-lg text-primary font-semibold">
+                      QA Review: Kerrison Bone Rongeur
+                    </p>
+                    <p className="font-body-sm text-body-sm text-on-surface-variant">
+                      BN-OR-6120 awaiting final metallurgy sign-off
+                    </p>
+                  </Link>
+                  <Link
+                    to="/admin/content"
+                    onClick={() => setNotificationsOpen(false)}
+                    className="block p-2 rounded-lg hover:bg-surface-container-low transition-colors"
+                  >
+                    <p className="font-label-lg text-label-lg text-primary font-semibold">
+                      Website Sync Synchronized
+                    </p>
+                    <p className="font-body-sm text-body-sm text-on-surface-variant">
+                      Cluster Frankfurt-04 index latency 24ms
+                    </p>
+                  </Link>
+                </div>
+              )}
+            </div>
+
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => {
+                  setUserMenuOpen((prev) => !prev);
+                  setNotificationsOpen(false);
+                }}
+                className="flex items-center gap-space-sm pl-space-sm rounded-lg hover:bg-surface-container-low py-1 pr-1.5 transition-colors"
+              >
+                <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0">
+                  <span className="material-symbols-outlined text-on-primary text-[18px]">
+                    person
+                  </span>
+                </div>
+                <div className="hidden md:flex flex-col text-left">
+                  <span className="font-label-lg text-label-lg text-on-surface font-semibold leading-tight">
+                    {displayName}
+                  </span>
+                  <span className="font-label-technical text-label-technical text-secondary leading-tight">
+                    {displayRole}
+                  </span>
+                </div>
+                <span className="material-symbols-outlined text-on-surface-variant text-[18px]">
+                  arrow_drop_down
+                </span>
+              </button>
+
+              {userMenuOpen && (
+                <div className="absolute right-0 mt-2 w-56 bg-surface-container-lowest rounded-xl shadow-lg border border-outline-variant/20 p-2 z-50 space-y-1">
+                  <div className="px-3 py-2 border-b border-surface-container">
+                    <p className="font-label-lg text-label-lg text-primary font-semibold truncate">
+                      {displayName}
+                    </p>
+                    <p className="font-label-code text-[11px] text-secondary truncate">
+                      {adminUser?.email}
+                    </p>
+                  </div>
+                  <Link
+                    to="/admin/profile"
+                    onClick={() => setUserMenuOpen(false)}
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-primary font-body-sm text-body-sm"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">
+                      account_circle
+                    </span>
+                    <span>Admin Profile</span>
+                  </Link>
+                  <Link
+                    to="/admin/settings"
+                    onClick={() => setUserMenuOpen(false)}
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-primary font-body-sm text-body-sm"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">
+                      settings
+                    </span>
+                    <span>Security &amp; Settings</span>
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={handleSignOut}
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-error hover:bg-error-container hover:text-on-error-container font-body-sm text-body-sm text-left"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">
+                      logout
+                    </span>
+                    <span>Sign Out</span>
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </header>
 
-        <main className="w-full pt-20 bg-surface min-h-screen px-space-md lg:px-space-lg pb-space-lg">
-          <Outlet />
+        <main className="w-full pt-20 bg-surface flex-1 px-space-md lg:px-space-lg pb-space-lg">
+          <Outlet
+            context={{
+              adminUser,
+              globalSearch,
+              setGlobalSearch,
+            }}
+          />
         </main>
       </div>
     </div>
