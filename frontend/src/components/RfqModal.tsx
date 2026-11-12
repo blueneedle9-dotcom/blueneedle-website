@@ -10,14 +10,14 @@ interface RfqModalProps {
 export const RfqModal: React.FC<RfqModalProps> = ({
   isOpen,
   onClose,
-  targetItemLabel = "BN-SC-1021-TC (Mayo Dissecting)",
+  targetItemLabel = "VSP-2044-TC (Metzenbaum-Fino TC)",
   manifestRefs = [],
 }) => {
   const [entity, setEntity] = useState("");
   const [email, setEmail] = useState("");
   const [quantity, setQuantity] = useState(100);
-  const [port, setPort] = useState("");
-  const [marking, setMarking] = useState("BLUENEEDLE Standard");
+  const [destination, setDestination] = useState("");
+  const [marking, setMarking] = useState("Vanguard GS1 UDI Laser Mark");
   const [notes, setNotes] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
@@ -25,7 +25,7 @@ export const RfqModal: React.FC<RfqModalProps> = ({
 
   const displayTarget =
     manifestRefs.length > 0
-      ? `${manifestRefs.length} Manifest Item(s): ${manifestRefs.join(", ")}`
+      ? `${manifestRefs.length} Selected Instrument(s): ${manifestRefs.join(", ")}`
       : targetItemLabel;
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -35,7 +35,7 @@ export const RfqModal: React.FC<RfqModalProps> = ({
       setSubmitted(false);
       setEntity("");
       setEmail("");
-      setPort("");
+      setDestination("");
       setNotes("");
       onClose();
     }, 1800);
@@ -43,21 +43,21 @@ export const RfqModal: React.FC<RfqModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-primary/40 backdrop-blur-sm flex items-center justify-center p-margin"
+      className="fixed inset-0 z-50 bg-primary/50 backdrop-blur-sm flex items-center justify-center p-4"
       id="rfq-modal"
       onClick={onClose}
     >
       <div
-        className="bg-surface-container-lowest rounded-xl max-w-2xl w-full p-space-lg lg:p-space-xl shadow-2xl relative"
+        className="bg-surface-container-lowest rounded-xl max-w-2xl w-full p-space-lg lg:p-space-xl shadow-2xl relative border border-outline-variant/30"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between pb-space-sm mb-space-md">
+        <div className="flex items-center justify-between pb-space-sm mb-space-md border-b border-outline-variant/20">
           <div>
-            <span className="font-label-technical text-label-technical text-secondary uppercase">
-              B2B Institutional Gateway
+            <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider">
+              Vanguard Institutional Procurement Desk
             </span>
-            <h3 className="font-headline-md text-headline-md text-primary">
-              Request Quotation &amp; Specification
+            <h3 className="font-headline-md text-headline-md text-primary font-semibold">
+              Request Quotation &amp; Specification Dossier
             </h3>
           </div>
           <button
@@ -71,51 +71,56 @@ export const RfqModal: React.FC<RfqModalProps> = ({
         </div>
 
         {submitted ? (
-          <div className="p-space-lg bg-surface-container-low rounded-xl text-center space-y-space-sm">
-            <div className="w-12 h-12 mx-auto rounded-full bg-surface-container-high flex items-center justify-center text-primary">
-              <span className="material-symbols-outlined text-[28px] text-emerald-600">
+          <div className="py-space-xl flex flex-col items-center text-center gap-space-sm">
+            <div className="w-12 h-12 rounded-full bg-primary-fixed text-primary flex items-center justify-center">
+              <span className="material-symbols-outlined text-[28px]">
                 check_circle
               </span>
             </div>
-            <h4 className="font-headline-sm text-headline-sm text-primary">
-              Specification Inquiry Transmitted
+            <h4 className="font-headline-sm text-headline-sm text-primary font-semibold">
+              Tender Requisition Logged
             </h4>
-            <p className="font-body-sm text-body-sm text-on-surface-variant">
-              Routed to BLUENEEDLE Export Desk (Sialkot). A dedicated metallurgical
-              specialist will respond within 4 business hours.
+            <p className="font-body-md text-body-md text-on-surface-variant max-w-md">
+              Your inquiry has been assigned to our European export division. An official proforma quotation and DIN compliance certificate will be sent to{" "}
+              <strong>{email || "your hospital email address"}</strong> within 24 hours.
             </p>
           </div>
         ) : (
-          <form className="space-y-space-sm" onSubmit={handleSubmit}>
-            <div className="p-space-sm bg-surface-container-low rounded-lg flex flex-wrap items-center justify-between gap-2 font-label-technical text-label-technical">
-              <span className="text-primary font-semibold truncate max-w-md">
-                TARGET ITEM: {displayTarget}
-              </span>
-              <span className="text-secondary">Sialkot Export FOB/CIF</span>
+          <form className="space-y-space-md" onSubmit={handleSubmit}>
+            <div>
+              <label className="block font-label-md text-label-md text-outline uppercase mb-1">
+                Instrument Scope / SKUs
+              </label>
+              <input
+                className="w-full bg-surface-container-low text-primary font-semibold font-body-sm text-body-sm p-space-sm rounded border border-outline-variant/30"
+                readOnly
+                type="text"
+                value={displayTarget}
+              />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-space-sm">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-space-md">
               <div>
-                <label className="block font-label-technical text-label-technical text-secondary mb-1">
-                  HOSPITAL / DISTRIBUTOR ENTITY
+                <label className="block font-label-md text-label-md text-outline uppercase mb-1">
+                  Procuring Entity / Hospital Name *
                 </label>
                 <input
-                  className="w-full px-3 py-2 rounded bg-surface-container-lowest text-on-surface font-body-sm text-body-sm shadow-sm border border-outline-variant/40 focus:outline-none focus:ring-1 focus:ring-primary"
-                  placeholder="e.g. Asklepios Kliniken Hamburg"
                   required
+                  className="w-full bg-surface-container-lowest text-on-surface font-body-md text-body-md p-space-sm rounded border border-outline-variant/40 focus:ring-1 focus:ring-primary-container outline-none"
+                  placeholder="e.g. Zurich University Clinic"
                   type="text"
                   value={entity}
                   onChange={(e) => setEntity(e.target.value)}
                 />
               </div>
               <div>
-                <label className="block font-label-technical text-label-technical text-secondary mb-1">
-                  PROCUREMENT EMAIL
+                <label className="block font-label-md text-label-md text-outline uppercase mb-1">
+                  Institutional Email *
                 </label>
                 <input
-                  className="w-full px-3 py-2 rounded bg-surface-container-lowest text-on-surface font-body-sm text-body-sm shadow-sm border border-outline-variant/40 focus:outline-none focus:ring-1 focus:ring-primary"
-                  placeholder="tenders@healthcare-entity.de"
                   required
+                  className="w-full bg-surface-container-lowest text-on-surface font-body-md text-body-md p-space-sm rounded border border-outline-variant/40 focus:ring-1 focus:ring-primary-container outline-none"
+                  placeholder="procurement@hospital.org"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -123,72 +128,73 @@ export const RfqModal: React.FC<RfqModalProps> = ({
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-space-sm">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-space-md">
               <div>
-                <label className="block font-label-technical text-label-technical text-secondary mb-1">
-                  DESIRED QUANTITY
+                <label className="block font-label-md text-label-md text-outline uppercase mb-1">
+                  Estimated Quantity (Units)
                 </label>
                 <input
-                  className="w-full px-3 py-2 rounded bg-surface-container-lowest text-on-surface font-body-sm text-body-sm shadow-sm border border-outline-variant/40 focus:outline-none focus:ring-1 focus:ring-primary"
-                  min={25}
+                  className="w-full bg-surface-container-lowest text-on-surface font-body-md text-body-md p-space-sm rounded border border-outline-variant/40 focus:ring-1 focus:ring-primary-container outline-none"
+                  min={1}
                   type="number"
                   value={quantity}
                   onChange={(e) => setQuantity(Number(e.target.value))}
                 />
               </div>
               <div>
-                <label className="block font-label-technical text-label-technical text-secondary mb-1">
-                  TARGET PORT
+                <label className="block font-label-md text-label-md text-outline uppercase mb-1">
+                  Destination Country / Airport Code
                 </label>
                 <input
-                  className="w-full px-3 py-2 rounded bg-surface-container-lowest text-on-surface font-body-sm text-body-sm shadow-sm border border-outline-variant/40 focus:outline-none focus:ring-1 focus:ring-primary"
-                  placeholder="Rotterdam / Hamburg / JFK"
+                  className="w-full bg-surface-container-lowest text-on-surface font-body-md text-body-md p-space-sm rounded border border-outline-variant/40 focus:ring-1 focus:ring-primary-container outline-none"
+                  placeholder="e.g. ZRH, FRA, JFK"
                   type="text"
-                  value={port}
-                  onChange={(e) => setPort(e.target.value)}
+                  value={destination}
+                  onChange={(e) => setDestination(e.target.value)}
                 />
-              </div>
-              <div>
-                <label className="block font-label-technical text-label-technical text-secondary mb-1">
-                  OEM LASER MARKING
-                </label>
-                <select
-                  className="w-full px-3 py-2 rounded bg-surface-container-lowest text-on-surface font-body-sm text-body-sm shadow-sm border border-outline-variant/40 focus:outline-none focus:ring-1 focus:ring-primary"
-                  value={marking}
-                  onChange={(e) => setMarking(e.target.value)}
-                >
-                  <option>BLUENEEDLE Standard</option>
-                  <option>Custom Institution Mark</option>
-                  <option>Neutral Unbranded</option>
-                </select>
               </div>
             </div>
 
             <div>
-              <label className="block font-label-technical text-label-technical text-secondary mb-1">
-                TECHNICAL SPECIFICATION NOTES
+              <label className="block font-label-md text-label-md text-outline uppercase mb-1">
+                Custom Marking &amp; Passivation Protocol
+              </label>
+              <select
+                className="w-full bg-surface-container-lowest text-on-surface font-body-md text-body-md p-space-sm rounded border border-outline-variant/40 focus:ring-1 focus:ring-primary-container outline-none"
+                value={marking}
+                onChange={(e) => setMarking(e.target.value)}
+              >
+                <option>Vanguard GS1 UDI Laser Mark (Standard)</option>
+                <option>Hospital Department Custom Laser Etch</option>
+                <option>OEM Private Label Direct Etch</option>
+                <option>Neutral / Unmarked Instrument Release</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block font-label-md text-label-md text-outline uppercase mb-1">
+                Clinical Scope / Additional Notes
               </label>
               <textarea
-                className="w-full px-3 py-2 rounded bg-surface-container-lowest text-on-surface font-body-sm text-body-sm shadow-sm border border-outline-variant/40 focus:outline-none focus:ring-1 focus:ring-primary"
-                placeholder="Specify blade curvature preference, custom pack sterile requirements or CE technical file documentation needed."
-                rows={3}
+                className="w-full bg-surface-container-lowest text-on-surface font-body-md text-body-md p-space-sm rounded border border-outline-variant/40 focus:ring-1 focus:ring-primary-container outline-none h-20"
+                placeholder="Include tender tender reference number, requested delivery timeframe, sterilization compatibility..."
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
               />
             </div>
 
-            <div className="pt-space-xs flex items-center justify-between">
-              <span className="font-label-technical text-label-technical text-secondary flex items-center gap-1">
-                <span className="material-symbols-outlined text-[16px] text-emerald-600">
+            <div className="flex items-center justify-between pt-space-xs">
+              <span className="font-label-sm text-label-sm text-outline flex items-center gap-1">
+                <span className="material-symbols-outlined text-[16px] text-primary">
                   lock
                 </span>
-                SDR &amp; NDA Protected
+                Compliant with GDPR &amp; HIPAA Hospital Procurement Data Standards
               </span>
               <button
-                className="bg-primary text-on-primary hover:bg-primary-container px-6 py-2.5 rounded font-label-lg text-label-lg font-semibold uppercase tracking-wider transition-colors shadow-sm"
+                className="bg-primary-container text-on-primary font-label-lg text-label-lg px-space-xl py-space-sm rounded-lg hover:brightness-110 active:brightness-95 transition-all shadow-sm"
                 type="submit"
               >
-                Transmit Inquiry
+                Transmit Tender Request
               </button>
             </div>
           </form>

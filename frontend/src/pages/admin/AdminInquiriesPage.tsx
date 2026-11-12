@@ -1,1086 +1,724 @@
 import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useAdminContext } from '../../components/AdminLayout';
 
 interface InquiryItem {
   id: string;
-  tenderId: string;
+  ref: string;
   name: string;
-  roleTitle: string;
-  flag: string;
-  countryCode: string;
-  institution: string;
-  shortInstitution: string;
   email: string;
-  phone: string;
-  facilityId: string;
-  deliveryLogistics: string;
+  hospital: string;
+  city: string;
+  country: string;
   subject: string;
-  previewText: string;
-  submittedAt: string;
-  submittedRelative: string;
-  status: 'NEW' | 'READ' | 'REPLIED' | 'ARCHIVED';
-  attachmentName: string;
-  attachmentMeta: string;
+  scopeSummary: string;
+  timestamp: string;
+  tenderDeadline?: string;
+  status: 'NEW' | 'IN_PROGRESS' | 'REPLIED' | 'CLOSED';
+  priority?: 'HIGH' | 'NORMAL';
+  discipline: string;
+  region: string;
+  units: number;
+  message: string;
   specLines: { qty: string; item: string }[];
-  closingBody: string;
 }
 
 const INITIAL_INQUIRIES: InquiryItem[] = [
   {
     id: 'inq-1',
-    tenderId: 'BN-RFQ-2024-0894',
-    name: 'Dr. Julian Vogel',
-    roleTitle: 'Lead Procurement Surgeon',
-    flag: '🇩🇪',
-    countryCode: 'Germany (DE)',
-    institution: 'Charité Universitätsmedizin Berlin',
-    shortInstitution: 'Charité Universitätsmedizin (Berlin)',
-    email: 'j.vogel@charite-berlin.de',
-    phone: '+49 30 450 50',
-    facilityId: 'DE-CHARITE-CSSD-04 (Mitte Campus)',
-    deliveryLogistics: 'Hamburg (DEHAM) / BER Cargo CIP',
-    subject: 'Institutional Tender Quote for 1,200x TC Mayo Scissors & Adson Forceps',
-    previewText:
-      'We are revising our central sterile surgical tray supply for Q1 2025. Please provide institutional wholesale pricing for DIN ISO standard batches...',
-    submittedAt: 'October 25, 2024 — 10:24:18 CET',
-    submittedRelative: '2 hours ago',
+    ref: '#INQ-8842',
+    name: 'Dr. Arthur Lindqvist',
+    email: 'arthur.l@karolinska.se',
+    hospital: 'Karolinska University Hospital',
+    city: 'Stockholm',
+    country: 'Sweden',
+    subject: 'RFQ: 150x Metzenbaum-Fino TC Scissors & DeBakey Forceps',
+    scopeSummary: 'Cardiovascular Suite Renewal (Batch of 300 surgical units)',
+    timestamp: 'Today, 09:42 AM',
+    tenderDeadline: 'Tender closes Nov 15',
     status: 'NEW',
-    attachmentName: 'Charite_Tender_Spec_Mayo_Adson_2025.xlsx',
-    attachmentMeta: '384 KB • Uploaded with inquiry form',
+    priority: 'HIGH',
+    discipline: 'Cardiovascular',
+    region: 'Europe',
+    units: 300,
+    message: 'We are expanding our thoracic operating theaters and require certified DIN EN ISO 7153-1 tungsten carbide instruments with gold-ring visual identification. Autoclave tolerance must reach 134°C with zero pitting across 500 validated cycles.',
     specLines: [
-      {
-        qty: '800 units:',
-        item: 'Mayo Dissecting Scissors, Straight & Curved (170mm), Tungsten Carbide Gold Rings, DIN EN ISO 7153-1 (Martensitic AISI 420B).',
-      },
-      {
-        qty: '400 units:',
-        item: 'Adson Micro Tissue Forceps (120mm, 1x2 Teeth), Satin Finish anti-glare, Rockwell Hardness 50-54 HRC.',
-      },
-    ],
-    closingBody:
-      'Please confirm that instruments comply with EU Medical Device Regulation (EU MDR 2017/745) Class Ir standards. Furthermore, we require 2 pre-production sample specimens sent to our central decontamination and CSSD facility in Berlin prior to final tender signoff.',
+      { qty: '150 units', item: 'Metzenbaum-Fino TC Dissecting Scissors 180mm Curved (DIN 1.4021 / AISI 420B)' },
+      { qty: '150 units', item: 'DeBakey Atraumatic Vascular Forceps 2.0mm tip, 200mm working length' }
+    ]
   },
   {
     id: 'inq-2',
-    tenderId: 'BN-RFQ-2024-0891',
-    name: 'Sarah Jenkins',
-    roleTitle: 'Head Nurse / Lead OR Sourcing',
-    flag: '🇬🇧',
-    countryCode: 'United Kingdom (UK)',
-    institution: 'Barts Health NHS Trust',
-    shortInstitution: 'Barts Health NHS Trust, London',
-    email: 's.jenkins@bartshealth.nhs.uk',
-    phone: '+44 20 7377 7000',
-    facilityId: 'UK-BARTS-OR-09 (Whitechapel)',
-    deliveryLogistics: 'Felixstowe (GBFXT) / LHR Air Freight',
-    subject: 'Orthopedic Kerrison Rongeur 40° & Bone Punch Requisition',
-    previewText:
-      'NHS Framework renewal: requesting batch quotes on detachable Kerrison punches (2mm, 3mm, 4mm, thin footplate) with satin non-reflective finish...',
-    submittedAt: 'October 24, 2024 — 16:15:02 GMT',
-    submittedRelative: 'Yesterday, 04:15 PM',
-    status: 'NEW',
-    attachmentName: 'NHS_Barts_Orthopedic_Lot4_2025.pdf',
-    attachmentMeta: '612 KB • Framework tender schedule',
+    ref: '#INQ-8840',
+    name: 'Sister Beatrice Renaud',
+    email: 'b.renaud@hug.ch',
+    hospital: 'Hôpital Universitaire Genève',
+    city: 'Geneva',
+    country: 'Switzerland',
+    subject: 'Custom Laser Marking & 2D DataMatrix Etch Requirements',
+    scopeSummary: '400x Hemostatic micro-forceps trace validation',
+    timestamp: 'Yesterday, 14:15 PM',
+    status: 'IN_PROGRESS',
+    discipline: 'Microsurgery',
+    region: 'Europe',
+    units: 400,
+    message: 'In compliance with MDR 2017/745 Article 27, all requested micro-forceps must carry laser-annealed UDI DataMatrix codes compliant with GS1 standards on the instrument shank without degrading surface passivation.',
     specLines: [
-      {
-        qty: '180 units:',
-        item: 'Detachable Kerrison Bone Rongeur Up-Cut 40°, 2mm/3mm/4mm Thin Footplate, Cryogenic Tempered AISI 440C.',
-      },
-      {
-        qty: '90 units:',
-        item: 'Beyer Double-Action Rongeur 180mm, Satin Anti-Glare Passivated Finish.',
-      },
-    ],
-    closingBody:
-      'NHS Supply Chain framework renewal closes November 12. Please include UKCA declaration availability and sterilization cycle warranty documentation.',
+      { qty: '400 units', item: 'Castroviejo Micro Forceps 0.3mm Straight with GS1 2D DataMatrix' }
+    ]
   },
   {
     id: 'inq-3',
-    tenderId: 'BN-RFQ-2024-0887',
-    name: 'Khalid Al-Mansoor',
-    roleTitle: 'Managing Director',
-    flag: '🇦🇪',
-    countryCode: 'United Arab Emirates (UAE)',
-    institution: 'MedSupply Gulf Trading LLC',
-    shortInstitution: 'MedSupply Gulf Trading, Dubai',
-    email: 'procurement@medsupplygulf.ae',
-    phone: '+971 4 321 9040',
-    facilityId: 'AE-DXB-DIST-12 (Al Quoz Hub)',
-    deliveryLogistics: 'Jebel Ali (AEJEA) CIF Cold Chain',
-    subject: 'Sole Regional Distribution Agreement & CE Technical Dossier',
-    previewText:
-      'Looking to extend exclusive distributor rights in GCC healthcare zone for cardiovascular clamp lines. Requesting complete regulatory audit trail...',
-    submittedAt: 'October 24, 2024 — 09:42:11 GST',
-    submittedRelative: 'Oct 24, 2024',
-    status: 'READ',
-    attachmentName: 'GCC_Distributor_Compliance_Checklist.pdf',
-    attachmentMeta: '920 KB • UAE MOHAP registration dossier',
+    ref: '#INQ-8837',
+    name: 'Klaus Bergmann',
+    email: 'k.bergmann@medizintechnik-berlin.de',
+    hospital: 'Medizintechnik Berlin GmbH',
+    city: 'Berlin',
+    country: 'Germany',
+    subject: 'Bulk Order Specification: Grade 5 Ti-6Al-4V Castroviejo Micro Needle Holders',
+    scopeSummary: 'Distributor procurement contract renewal for Q1 2026',
+    timestamp: 'Oct 22, 2025',
+    status: 'REPLIED',
+    discipline: 'Microsurgery',
+    region: 'Europe',
+    units: 250,
+    message: 'Renewing our annual framework contract for German regional surgical centers. Requesting factory test certificates DIN 50049 3.1B with batch metallurgy spectrometer breakdowns.',
     specLines: [
-      {
-        qty: '2,500 units:',
-        item: 'Full-spectrum DeBakey Atraumatic Vascular Clamps & Satinsky Tangential Anastomosis Clamps.',
-      },
-      {
-        qty: '500 sets:',
-        item: 'Cardiovascular Micro Vessel Dilators with anodized sterilization containers.',
-      },
-    ],
-    closingBody:
-      'Kindly dispatch your ISO 13485:2016 certificate, Free Sale Certificate, and proposed annual MOQ schedule for UAE + Saudi Arabia territory coverage.',
+      { qty: '250 units', item: 'Castroviejo Micro Needle Holder 140mm straight with TC jaw inserts' }
+    ]
   },
   {
     id: 'inq-4',
-    tenderId: 'BN-RFQ-2024-0879',
-    name: 'Dr. Marcella Rossi',
-    roleTitle: 'Head of Ophthalmic Surgery',
-    flag: '🇮🇹',
-    countryCode: 'Italy (IT)',
-    institution: 'Ospedale San Raffaele Milano',
-    shortInstitution: 'Ospedale San Raffaele, Milan',
-    email: 'm.rossi@sanraffaele.it',
-    phone: '+39 02 2643 1',
-    facilityId: 'IT-OSR-MICRO-02 (Milano)',
-    deliveryLogistics: 'DHL Express Biomedical MXP',
-    subject: 'Castroviejo Titanium Micro Forceps & Needle Holder Inquiries',
-    previewText:
-      'Quotation delivered with Lot Inspection Certificate EN 10204 3.1. Sample kit dispatched via DHL Express AWB #8491024820...',
-    submittedAt: 'October 23, 2024 — 14:08:50 CET',
-    submittedRelative: 'Oct 23, 2024',
+    ref: '#INQ-8835',
+    name: 'Dr. Sofia Rossi',
+    email: 'sofia.rossi@maggiore.milano.it',
+    hospital: 'Ospedale Maggiore Milano',
+    city: 'Milan',
+    country: 'Italy',
+    subject: 'Request for DIN EN ISO 13485:2016 Conformity Certificate & Autoclave Log',
+    scopeSummary: 'Autoclave 134°C sterilization compatibility validation',
+    timestamp: 'Oct 21, 2025',
     status: 'REPLIED',
-    attachmentName: 'SanRaffaele_Ophthalmic_MicroSets.xlsx',
-    attachmentMeta: '210 KB • Ophthalmic tray matrix',
+    discipline: 'General Surgery',
+    region: 'Europe',
+    units: 120,
+    message: 'Hospital CSSD audit is reviewing all supplier dossiers. Please dispatch the CE 0123 / ISO 13485:2016 Annex II declaration along with corrosion test reports ASTM F1089.',
     specLines: [
-      {
-        qty: '120 units:',
-        item: 'Castroviejo Needle Holder Curved Micro 140mm Titanium Gr.5 Blue Anodized.',
-      },
-      {
-        qty: '80 units:',
-        item: 'Castroviejo Precision Caliper 0-20mm laser graduated.',
-      },
-    ],
-    closingBody:
-      'Evaluation samples confirmed in surgical CSSD review. Awaiting purchase order release by regional Lombardy procurement board.',
+      { qty: '120 units', item: 'Standard Crile-Wood & Mayo Instrumentation Sets' }
+    ]
   },
   {
     id: 'inq-5',
-    tenderId: 'BN-RFQ-2024-0872',
-    name: 'Arthur Lindqvist',
-    roleTitle: 'Head of Sourcing',
-    flag: '🇸🇪',
-    countryCode: 'Sweden (SE)',
-    institution: 'Nordic Surgical AB',
-    shortInstitution: 'Nordic Surgical AB, Gothenburg',
-    email: 'a.lindqvist@nordicsurgical.se',
-    phone: '+46 31 700 4210',
-    facilityId: 'SE-GOT-OEM-07',
-    deliveryLogistics: 'Gothenburg Port (SEGOT) / Air',
-    subject: 'Private Label Laser Stamping & Custom Die Tooling',
-    previewText:
-      'MDR technical file validation completed. OEM micro-stamping schematics approved for initial production run of 3,500 scalpel handles...',
-    submittedAt: 'October 22, 2024 — 11:55:00 CET',
-    submittedRelative: 'Oct 22, 2024',
-    status: 'REPLIED',
-    attachmentName: 'NordicSurgical_OEM_UDI_Artwork_v3.pdf',
-    attachmentMeta: '1.4 MB • GS1 UDI DataMatrix vectors',
+    ref: '#INQ-8829',
+    name: 'Prof. Alistair MacIntyre',
+    email: 'a.macintyre@nhslothian.scot.nhs.uk',
+    hospital: 'Royal Edinburgh Infirmary',
+    city: 'Edinburgh',
+    country: 'United Kingdom',
+    subject: 'Tender Specification: 80x Kerrison Bone Rongeurs (40° Up-Biting)',
+    scopeSummary: 'Diamond-Like Carbon (DLC) coating durability review',
+    timestamp: 'Oct 20, 2025',
+    status: 'IN_PROGRESS',
+    discipline: 'Orthopedic DLC',
+    region: 'Europe',
+    units: 80,
+    message: 'Evaluating DLC ceramic coating for spinal decompression procedures. We require micro-hardness specifications exceeding 2,200 HV and zero chip rate under high-frequency sonic cleaning.',
     specLines: [
-      {
-        qty: '3,500 units:',
-        item: 'OEM Laser-Etched Crile-Wood TC Needle Holders & No. 3/4 Scalpel Handles with EAN-128 Batch Coding.',
-      },
-    ],
-    closingBody:
-      'Artwork proof signed by regulatory officer. First production batch scheduled for ultrasonic passivation.',
-  },
-];
-
-const QUICK_PRESETS = [
-  {
-    id: 'rfq',
-    label: 'Standard Wholesale RFQ Dispatch',
-    buildBody: (inq: InquiryItem) =>
-      `Dear ${inq.name},\n\nThank you for reaching out to the BLUENEEDLE surgical instrument engineering team regarding the ${inq.institution} procurement request (${inq.tenderId}).\n\nAll requested instrument series are manufactured under DIN EN ISO 7153-1 and carry CE MDR Class Ir Technical Documentation certified by our European Notified Body.\n\nAttached please find our official Tier-1 Institutional Procurement Quotation and the corresponding Material Test Reports (EN 10204 3.1). Sample evaluation units can ship via express courier within 72 hours.\n\nSincerely,\nTariq Mehmood\nChief Metallurgist & Catalog Lead\nBLUENEEDLE Surgical Instruments`,
+      { qty: '40 units', item: 'Kerrison Bone Rongeur 40° Up-Biting 2mm thin footplate (DLC Black)' },
+      { qty: '40 units', item: 'Kerrison Bone Rongeur 40° Up-Biting 3mm standard footplate (DLC Black)' }
+    ]
   },
   {
-    id: 'specs',
-    label: 'Request More Clinical Specs',
-    buildBody: (inq: InquiryItem) =>
-      `Dear ${inq.name},\n\nThank you for your tender inquiry (${inq.tenderId}). To finalize our metallurgical and dimensional tolerance sheet for ${inq.institution}, kindly confirm:\n1. Preferred alloy grade (AISI 420B DIN 1.4021 vs Titanium Gr. 5)\n2. Surface finish requirement (Anti-glare Satin Matte vs Mirror Polish)\n3. Required UDI/DataMatrix laser etching conventions.\n\nBest regards,\nTariq Mehmood\nBLUENEEDLE Engineering Desk`,
-  },
-  {
-    id: 'call',
-    label: 'Invite to Technical Engineering Call',
-    buildBody: (inq: InquiryItem) =>
-      `Dear ${inq.name},\n\nOur lead metallurgical engineer would welcome a 20-minute technical briefing regarding ${inq.subject}. Please let us know your preferred time slot (CET/GMT) so we can walk through sample validation and batch testing certificates.\n\nWarm regards,\nTariq Mehmood\nBLUENEEDLE Surgical Instruments`,
-  },
-  {
-    id: 'mdr',
-    label: 'MDR Class Ir Dossier Dispatch',
-    buildBody: (inq: InquiryItem) =>
-      `Dear ${inq.name},\n\nAttached is our complete EU MDR 2017/745 Class Ir Technical Documentation summary, ISO 13485:2016 Quality Management certificate, and ASTM A967 passivation verification package for ${inq.institution}.\n\nSincerely,\nTariq Mehmood\nQuality Assurance & Regulatory Lead\nBLUENEEDLE Surgical Instruments`,
-  },
+    id: 'inq-6',
+    ref: '#INQ-8822',
+    name: 'Elena Varga',
+    email: 'e.varga@semmelweis.hu',
+    hospital: 'Semmelweis Clinical Centre',
+    city: 'Budapest',
+    country: 'Hungary',
+    subject: 'Annual Orthopedic Instrumentation Supply Contract Evaluation',
+    scopeSummary: 'Master framework signed for 2026-2027 fiscal term',
+    timestamp: 'Oct 19, 2025',
+    status: 'CLOSED',
+    discipline: 'Orthopedic DLC',
+    region: 'Europe',
+    units: 500,
+    message: 'Formal contract award following European Union public tender procurement notice. Signed purchase order PO-8192 attached for execution.',
+    specLines: [
+      { qty: '500 units', item: 'Standardized Bone Curettes, Elevators, and Weitlaner Retractors' }
+    ]
+  }
 ];
 
 export const AdminInquiriesPage: React.FC = () => {
-  const { adminUser } = useAdminContext();
-
   const [inquiries, setInquiries] = useState<InquiryItem[]>(INITIAL_INQUIRIES);
-  const [selectedId, setSelectedId] = useState<string>(INITIAL_INQUIRIES[0].id);
-  const [statusTab, setStatusTab] = useState<'ALL' | 'NEW' | 'REPLIED' | 'ARCHIVED'>('ALL');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [countryFilter, setCountryFilter] = useState('ALL');
-  const [activePreset, setActivePreset] = useState('rfq');
-  const [replySubject, setReplySubject] = useState(
-    'Re: Institutional Tender Quote for 1,200x TC Mayo Scissors — BLUENEEDLE Sialkot Export & Quality Engineering Desk'
-  );
-  const [replyBody, setReplyBody] = useState(QUICK_PRESETS[0].buildBody(INITIAL_INQUIRIES[0]));
-  const [archiveOnSend, setArchiveOnSend] = useState(true);
-  const [toastMsg, setToastMsg] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('ALL');
+  const [disciplineFilter, setDisciplineFilter] = useState('ALL');
+  const [regionFilter, setRegionFilter] = useState('ALL');
+  const [selectedId, setSelectedId] = useState<string>('inq-1');
+  const [selectedCheckboxes, setSelectedCheckboxes] = useState<Record<string, boolean>>({ 'inq-1': true });
 
-  const showToast = (msg: string) => {
-    setToastMsg(msg);
-    setTimeout(() => setToastMsg(null), 3200);
-  };
-
-  const selectedInquiry = useMemo(
-    () => inquiries.find((i) => i.id === selectedId) || inquiries[0],
-    [inquiries, selectedId]
-  );
-
-  const selectInquiry = (inq: InquiryItem) => {
-    setSelectedId(inq.id);
-    setReplySubject(
-      `Re: ${inq.subject} — BLUENEEDLE Sialkot Export & Quality Engineering Desk`
-    );
-    const preset = QUICK_PRESETS.find((p) => p.id === activePreset) || QUICK_PRESETS[0];
-    setReplyBody(preset.buildBody(inq));
-  };
-
-  const handlePresetClick = (presetId: string) => {
-    setActivePreset(presetId);
-    const preset = QUICK_PRESETS.find((p) => p.id === presetId);
-    if (preset && selectedInquiry) {
-      setReplyBody(preset.buildBody(selectedInquiry));
-    }
-  };
-
-  const updateSelectedStatus = (newStatus: InquiryItem['status']) => {
-    if (!selectedInquiry) return;
-    setInquiries((prev) =>
-      prev.map((item) => (item.id === selectedInquiry.id ? { ...item, status: newStatus } : item))
-    );
-    showToast(`${selectedInquiry.tenderId} status updated to ${newStatus}.`);
-  };
-
-  const handleMarkAllRead = () => {
-    setInquiries((prev) =>
-      prev.map((item) => (item.status === 'NEW' ? { ...item, status: 'READ' } : item))
-    );
-    showToast('All unread institutional inquiries marked as READ.');
-  };
-
-  const handleSendDispatch = () => {
-    if (!selectedInquiry) return;
-    setInquiries((prev) =>
-      prev.map((item) =>
-        item.id === selectedInquiry.id
-          ? { ...item, status: archiveOnSend ? 'REPLIED' : 'READ' }
-          : item
-      )
-    );
-    showToast(`Official RFQ response dispatched to ${selectedInquiry.email}.`);
-  };
+  const activeInquiry = useMemo(() => {
+    return inquiries.find((i) => i.id === selectedId) || inquiries[0];
+  }, [inquiries, selectedId]);
 
   const filteredInquiries = useMemo(() => {
-    const q = searchTerm.trim().toLowerCase();
-    return inquiries.filter((inq) => {
-      if (statusTab === 'NEW' && inq.status !== 'NEW') return false;
-      if (statusTab === 'REPLIED' && inq.status !== 'REPLIED') return false;
-      if (statusTab === 'ARCHIVED' && inq.status !== 'ARCHIVED') return false;
-      if (countryFilter !== 'ALL' && inq.countryCode !== countryFilter) return false;
-      if (!q) return true;
-      return (
-        inq.name.toLowerCase().includes(q) ||
-        inq.institution.toLowerCase().includes(q) ||
-        inq.email.toLowerCase().includes(q) ||
-        inq.subject.toLowerCase().includes(q) ||
-        inq.tenderId.toLowerCase().includes(q)
-      );
+    return inquiries.filter((item) => {
+      if (statusFilter !== 'ALL' && item.status !== statusFilter) return false;
+      if (disciplineFilter !== 'ALL' && item.discipline !== disciplineFilter) return false;
+      if (regionFilter !== 'ALL' && item.region !== regionFilter) return false;
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        const match =
+          item.ref.toLowerCase().includes(q) ||
+          item.name.toLowerCase().includes(q) ||
+          item.hospital.toLowerCase().includes(q) ||
+          item.email.toLowerCase().includes(q) ||
+          item.subject.toLowerCase().includes(q);
+        if (!match) return false;
+      }
+      return true;
     });
-  }, [inquiries, statusTab, searchTerm, countryFilter]);
+  }, [inquiries, searchQuery, statusFilter, disciplineFilter, regionFilter]);
 
-  const counts = useMemo(
-    () => ({
-      all: inquiries.length,
-      unread: inquiries.filter((i) => i.status === 'NEW').length,
-      replied: inquiries.filter((i) => i.status === 'REPLIED').length,
-      archived: inquiries.filter((i) => i.status === 'ARCHIVED').length,
-    }),
-    [inquiries]
-  );
+  const toggleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const checked = e.target.checked;
+    const next: Record<string, boolean> = {};
+    if (checked) {
+      filteredInquiries.forEach((item) => {
+        next[item.id] = true;
+      });
+    }
+    setSelectedCheckboxes(next);
+  };
 
-  const operatorName = adminUser?.fullName || 'Tariq Mehmood';
+  const toggleCheckbox = (id: string) => {
+    setSelectedCheckboxes((prev) => ({
+      ...prev,
+      [id]: !prev[id]
+    }));
+  };
+
+  const updateStatus = (id: string, newStatus: InquiryItem['status']) => {
+    setInquiries((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, status: newStatus } : item))
+    );
+  };
 
   return (
-    <div className="w-full px-gutter py-space-xl flex flex-col gap-space-xl max-w-[1720px] mx-auto">
-      {/* Top Breadcrumb & Page Actions Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md">
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-space-xs text-on-surface-variant font-caption text-caption">
-            <span className="hover:text-primary transition-colors cursor-pointer">
-              Customer Relations
-            </span>
-            <span className="material-symbols-outlined text-xs">chevron_right</span>
-            <span className="text-primary font-caption-bold">B2B Inquiries &amp; Tenders</span>
-          </div>
-          <div className="flex items-baseline gap-space-sm mt-0.5">
-            <h1 className="font-headline-lg text-headline-lg text-primary tracking-tight">
-              Inquiry Management
-            </h1>
-            <span className="hidden sm:inline-flex px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-caption-bold text-caption tracking-normal">
-              Regulatory Batch v4.1
-            </span>
-          </div>
-          <p className="font-body-default text-body-default text-on-surface-variant">
-            Manage international hospital tenders, procurement requests, and institutional wholesale inquiries.
-          </p>
-        </div>
+    <div className="flex flex-col w-full">
+      <div className="p-space-lg lg:p-margin flex flex-col gap-space-lg max-w-[1440px] mx-auto w-full">
+        {/* Top Breadcrumb & Page Header */}
+        <div className="flex flex-col gap-space-sm">
+          <div className="flex flex-wrap items-center justify-between gap-space-md">
+            <div>
+              <div className="flex items-center gap-space-xs font-label-sm text-label-sm text-outline tracking-wider uppercase mb-1">
+                <span>Hospital Logistics</span>
+                <span className="material-symbols-outlined text-[12px]">chevron_right</span>
+                <span>Tenders & Procurements</span>
+              </div>
+              <h1 className="font-headline-lg text-headline-lg font-bold text-on-surface tracking-tight">
+                Customer Inquiries
+              </h1>
+              <p className="font-body-md text-body-md text-on-surface-variant max-w-2xl mt-0.5">
+                Manage institutional procurement tenders, hospital quotes, and global surgical distribution requests submitted via public showcase.
+              </p>
+            </div>
 
-        <div className="flex flex-wrap items-center gap-space-sm">
-          <button
-            type="button"
-            onClick={() => showToast('Exported B2B inquiry log to CSV.')}
-            className="h-9 px-space-md rounded-lg bg-surface-container-lowest text-on-surface border border-surface-container-high hover:bg-surface-container-low transition-colors font-button-text text-button-text flex items-center gap-1.5 shadow-sm"
-          >
-            <span className="material-symbols-outlined text-base">download</span>
-            <span>Export Inquiries (CSV)</span>
-          </button>
-          <button
-            type="button"
-            onClick={handleMarkAllRead}
-            className="h-9 px-space-md rounded-lg bg-surface-container-lowest text-on-surface border border-surface-container-high hover:bg-surface-container-low transition-colors font-button-text text-button-text flex items-center gap-1.5 shadow-sm"
-          >
-            <span className="material-symbols-outlined text-base">done_all</span>
-            <span>Mark All as Read</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Operational Metric Strips */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-space-md">
-        <div className="flex flex-col p-space-md bg-surface-container-lowest rounded-xl shadow-sm justify-between">
-          <div className="flex items-center justify-between">
-            <span className="font-label-technical text-label-technical text-secondary uppercase">
-              Pending Tenders
-            </span>
-            <span className="p-1 rounded bg-secondary-container text-on-secondary-container material-symbols-outlined text-[16px]">
-              receipt_long
-            </span>
-          </div>
-          <div className="flex items-baseline gap-2 mt-2">
-            <span className="font-headline-md text-headline-md text-primary font-bold">14</span>
-            <span className="font-label-code text-label-code text-error font-medium">
-              +3 since 08:00 CET
-            </span>
-          </div>
-          <div className="w-full bg-surface-container-high h-1 rounded-full mt-3 overflow-hidden">
-            <div className="bg-primary h-full" style={{ width: '32%' }} />
+            {/* Quick Actions Group */}
+            <div className="flex flex-wrap items-center gap-space-xs sm:gap-space-sm">
+              <button
+                className="inline-flex items-center gap-space-xs px-space-md py-2 bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md rounded transition-colors shadow-sm"
+                type="button"
+                onClick={() => alert('Filtering by current quarter tenders (Q4 2025)')}
+              >
+                <span className="material-symbols-outlined text-[18px] text-outline">calendar_today</span>
+                <span>Date Range</span>
+              </button>
+              <button
+                className="inline-flex items-center gap-space-xs px-space-md py-2 bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md rounded transition-colors shadow-sm"
+                type="button"
+                onClick={() => {
+                  setInquiries((prev) => prev.map((item) => ({ ...item, status: item.status === 'NEW' ? 'IN_PROGRESS' : item.status })));
+                  alert('Marked all new tenders as In Progress.');
+                }}
+              >
+                <span className="material-symbols-outlined text-[18px] text-outline">done_all</span>
+                <span>Batch Mark as Reviewed</span>
+              </button>
+              <button
+                className="inline-flex items-center gap-space-xs px-space-md py-2 bg-primary-container hover:bg-primary text-on-primary font-label-md text-label-md rounded transition-all shadow-sm"
+                type="button"
+                onClick={() => alert('Exporting tenders to Vanguard_Tenders_Registry_2025.csv')}
+              >
+                <span className="material-symbols-outlined text-[18px]">download</span>
+                <span>Export Inquiries (.CSV)</span>
+              </button>
+            </div>
           </div>
         </div>
 
-        <div className="flex flex-col p-space-md bg-surface-container-lowest rounded-xl shadow-sm justify-between">
-          <div className="flex items-center justify-between">
-            <span className="font-label-technical text-label-technical text-secondary uppercase">
-              Avg First Response
-            </span>
-            <span className="p-1 rounded bg-surface-container text-secondary material-symbols-outlined text-[16px]">
-              timer
-            </span>
+        {/* KPI Metric Cards Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-space-md">
+          {/* Total Inquiries */}
+          <div className="bg-surface-container-lowest p-space-md rounded-lg shadow-sm flex flex-col justify-between">
+            <div className="flex items-center justify-between">
+              <span className="font-label-sm text-label-sm uppercase tracking-wider text-outline">Total Inquiries</span>
+              <span className="material-symbols-outlined text-outline text-[20px]">inventory</span>
+            </div>
+            <div className="mt-3">
+              <div className="font-headline-lg text-headline-lg font-bold text-on-surface leading-none">148</div>
+              <p className="font-label-sm text-label-sm text-on-surface-variant mt-1">All-time recorded tenders</p>
+            </div>
           </div>
-          <div className="flex items-baseline gap-2 mt-2">
-            <span className="font-headline-md text-headline-md text-primary font-bold">1.4h</span>
-            <span className="font-label-code text-label-code text-secondary">
-              Target: &lt; 4.0h
-            </span>
+
+          {/* Action Required */}
+          <div className="bg-surface-container-lowest p-space-md rounded-lg shadow-sm relative overflow-hidden flex flex-col justify-between">
+            <div className="absolute top-0 right-0 w-2 h-full bg-error"></div>
+            <div className="flex items-center justify-between">
+              <span className="font-label-sm text-label-sm uppercase tracking-wider text-error font-semibold flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-error animate-ping"></span>
+                Action Required
+              </span>
+              <span className="px-space-xs py-0.5 rounded bg-error-container text-on-error-container font-label-sm text-label-sm font-semibold">Priority</span>
+            </div>
+            <div className="mt-3">
+              <div className="font-headline-lg text-headline-lg font-bold text-error leading-none">28</div>
+              <p className="font-label-sm text-label-sm text-on-surface-variant mt-1">Awaiting initial review</p>
+            </div>
           </div>
-          <div className="w-full bg-surface-container-high h-1 rounded-full mt-3 overflow-hidden">
-            <div className="bg-secondary h-full" style={{ width: '78%' }} />
+
+          {/* In Progress */}
+          <div className="bg-surface-container-lowest p-space-md rounded-lg shadow-sm flex flex-col justify-between">
+            <div className="flex items-center justify-between">
+              <span className="font-label-sm text-label-sm uppercase tracking-wider text-outline">In Progress</span>
+              <span className="material-symbols-outlined text-outline text-[20px]">engineering</span>
+            </div>
+            <div className="mt-3">
+              <div className="font-headline-lg text-headline-lg font-bold text-on-surface leading-none">18</div>
+              <p className="font-label-sm text-label-sm text-on-surface-variant mt-1">Metallurgy / pricing review</p>
+            </div>
+          </div>
+
+          {/* Replied */}
+          <div className="bg-surface-container-lowest p-space-md rounded-lg shadow-sm flex flex-col justify-between">
+            <div className="flex items-center justify-between">
+              <span className="font-label-sm text-label-sm uppercase tracking-wider text-outline">Replied</span>
+              <span className="material-symbols-outlined text-outline text-[20px]">mark_email_read</span>
+            </div>
+            <div className="mt-3">
+              <div className="font-headline-lg text-headline-lg font-bold text-on-surface leading-none">86</div>
+              <p className="font-label-sm text-label-sm text-on-surface-variant mt-1">Formal quotes dispatched</p>
+            </div>
+          </div>
+
+          {/* Closed / Won */}
+          <div className="bg-surface-container-lowest p-space-md rounded-lg shadow-sm flex flex-col justify-between col-span-2 md:col-span-1">
+            <div className="flex items-center justify-between">
+              <span className="font-label-sm text-label-sm uppercase tracking-wider text-outline">Closed / Won</span>
+              <span className="material-symbols-outlined text-primary-container text-[20px]">verified</span>
+            </div>
+            <div className="mt-3">
+              <div className="font-headline-lg text-headline-lg font-bold text-on-surface leading-none">16</div>
+              <p className="font-label-sm text-label-sm text-on-surface-variant mt-1">Converted to purchase orders</p>
+            </div>
           </div>
         </div>
 
-        <div className="flex flex-col p-space-md bg-surface-container-lowest rounded-xl shadow-sm justify-between">
-          <div className="flex items-center justify-between">
-            <span className="font-label-technical text-label-technical text-secondary uppercase">
-              Territories Active
-            </span>
-            <span className="p-1 rounded bg-surface-container text-secondary material-symbols-outlined text-[16px]">
-              public
-            </span>
-          </div>
-          <div className="flex items-baseline gap-2 mt-2">
-            <span className="font-headline-md text-headline-md text-primary font-bold">21</span>
-            <span className="font-label-code text-label-code text-secondary font-medium">
-              DACH / NHS / GCC lead
-            </span>
-          </div>
-          <div className="w-full bg-surface-container-high h-1 rounded-full mt-3 overflow-hidden">
-            <div className="bg-primary-container h-full" style={{ width: '90%' }} />
-          </div>
-        </div>
-
-        <div className="flex flex-col p-space-md bg-surface-container-lowest rounded-xl shadow-sm justify-between">
-          <div className="flex items-center justify-between">
-            <span className="font-label-technical text-label-technical text-secondary uppercase">
-              RFQ Conversion
-            </span>
-            <span className="p-1 rounded bg-secondary-container text-on-secondary-container material-symbols-outlined text-[16px]">
-              verified
-            </span>
-          </div>
-          <div className="flex items-baseline gap-2 mt-2">
-            <span className="font-headline-md text-headline-md text-primary font-bold">42.8%</span>
-            <span className="font-label-code text-label-code text-secondary">MDR Grade Ir items</span>
-          </div>
-          <div className="w-full bg-surface-container-high h-1 rounded-full mt-3 overflow-hidden">
-            <div className="bg-secondary-fixed-dim h-full" style={{ width: '64%' }} />
-          </div>
-        </div>
-      </div>
-
-      {/* Filter, Segment & Parameter Control Bar */}
-      <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-space-md bg-surface-container-lowest p-space-md rounded-xl shadow-sm">
-        <div className="flex items-center gap-1 bg-surface-container-low p-1 rounded-lg overflow-x-auto">
-          <button
-            type="button"
-            onClick={() => setStatusTab('ALL')}
-            className={`px-space-md py-1.5 rounded font-label-lg text-label-lg transition-colors whitespace-nowrap ${
-              statusTab === 'ALL'
-                ? 'bg-surface-container-lowest text-primary font-semibold shadow-sm'
-                : 'text-on-surface-variant hover:text-on-surface'
-            }`}
-          >
-            All Inquiries{' '}
-            <span className="ml-1.5 px-1.5 py-0.5 rounded-full bg-surface-container text-secondary font-label-code text-label-code">
-              {counts.all}
-            </span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setStatusTab('NEW')}
-            className={`px-space-md py-1.5 rounded font-label-lg text-label-lg transition-colors whitespace-nowrap flex items-center gap-1.5 ${
-              statusTab === 'NEW'
-                ? 'bg-surface-container-lowest text-primary font-semibold shadow-sm'
-                : 'text-on-surface-variant hover:text-on-surface'
-            }`}
-          >
-            <span className="w-2 h-2 rounded-full bg-amber-500" />
-            New / Unread{' '}
-            <span className="px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-900 font-label-code text-label-code font-semibold">
-              {counts.unread}
-            </span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setStatusTab('REPLIED')}
-            className={`px-space-md py-1.5 rounded font-label-lg text-label-lg transition-colors whitespace-nowrap ${
-              statusTab === 'REPLIED'
-                ? 'bg-surface-container-lowest text-primary font-semibold shadow-sm'
-                : 'text-on-surface-variant hover:text-on-surface'
-            }`}
-          >
-            Replied{' '}
-            <span className="ml-1.5 px-1.5 py-0.5 rounded-full bg-surface-container text-secondary font-label-code text-label-code">
-              {counts.replied}
-            </span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setStatusTab('ARCHIVED')}
-            className={`px-space-md py-1.5 rounded font-label-lg text-label-lg transition-colors whitespace-nowrap ${
-              statusTab === 'ARCHIVED'
-                ? 'bg-surface-container-lowest text-primary font-semibold shadow-sm'
-                : 'text-on-surface-variant hover:text-on-surface'
-            }`}
-          >
-            Archived{' '}
-            <span className="ml-1.5 px-1.5 py-0.5 rounded-full bg-surface-container text-secondary font-label-code text-label-code">
-              {counts.archived}
-            </span>
-          </button>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-space-sm flex-1 lg:max-w-2xl justify-end">
-          <div className="relative flex-1 min-w-[240px]">
-            <span className="material-symbols-outlined absolute left-3 top-2.5 text-secondary text-[18px]">
-              search
-            </span>
+        {/* Search & Filter Controls Panel */}
+        <div className="bg-surface-container-lowest p-space-md rounded-lg shadow-sm flex flex-col lg:flex-row gap-space-md items-stretch lg:items-center justify-between">
+          {/* Search Input Box */}
+          <div className="relative flex-1">
+            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px]">search</span>
             <input
+              className="w-full pl-10 pr-4 py-2 bg-surface-container-low text-on-surface placeholder:text-outline text-body-sm font-body-sm rounded focus:bg-surface-container-lowest outline-none transition-all"
+              placeholder="Search by customer name, hospital / institution, inquiry ID, or subject..."
               type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search by customer name, hospital, country, or email..."
-              className="w-full pl-9 pr-4 py-2 rounded bg-surface-container-low text-on-surface placeholder:text-on-surface-variant font-body-sm text-body-sm focus:outline-none focus:bg-surface-container-lowest focus:ring-1 focus:ring-secondary transition-all"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
 
-          <div className="relative">
-            <select
-              value={countryFilter}
-              onChange={(e) => setCountryFilter(e.target.value)}
-              className="appearance-none pl-3 pr-8 py-2 rounded bg-surface-container-low text-on-surface font-body-sm text-body-sm focus:outline-none focus:ring-1 focus:ring-secondary cursor-pointer"
-            >
-              <option value="ALL">All Countries (DE, UK, UAE, IT, SE)</option>
-              <option value="Germany (DE)">Germany (DE)</option>
-              <option value="United Kingdom (UK)">United Kingdom (UK)</option>
-              <option value="United Arab Emirates (UAE)">United Arab Emirates (UAE)</option>
-              <option value="Italy (IT)">Italy (IT)</option>
-              <option value="Sweden (SE)">Sweden (SE)</option>
-            </select>
-            <span className="material-symbols-outlined absolute right-2 top-2.5 text-secondary pointer-events-none text-[18px]">
-              expand_more
+          {/* Filters & Sorting Bar */}
+          <div className="flex flex-wrap items-center gap-space-xs sm:gap-space-sm">
+            {/* Status Filter */}
+            <div className="flex items-center gap-1 bg-surface-container-low px-space-sm py-1.5 rounded">
+              <span className="font-label-sm text-label-sm text-outline uppercase pl-1">Status:</span>
+              <select
+                className="bg-transparent font-label-md text-label-md text-on-surface outline-none cursor-pointer pr-1"
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+              >
+                <option value="ALL">All Statuses</option>
+                <option value="NEW">New (Action Required)</option>
+                <option value="IN_PROGRESS">In Progress</option>
+                <option value="REPLIED">Replied</option>
+                <option value="CLOSED">Closed / Won</option>
+              </select>
+            </div>
+
+            {/* Discipline Filter */}
+            <div className="flex items-center gap-1 bg-surface-container-low px-space-sm py-1.5 rounded">
+              <span className="font-label-sm text-label-sm text-outline uppercase pl-1">Discipline:</span>
+              <select
+                className="bg-transparent font-label-md text-label-md text-on-surface outline-none cursor-pointer pr-1"
+                value={disciplineFilter}
+                onChange={(e) => setDisciplineFilter(e.target.value)}
+              >
+                <option value="ALL">All Disciplines</option>
+                <option value="General Surgery">General Surgery</option>
+                <option value="Cardiovascular">Cardiovascular</option>
+                <option value="Microsurgery">Microsurgery</option>
+                <option value="Orthopedic DLC">Orthopedic DLC</option>
+              </select>
+            </div>
+
+            {/* Region Filter */}
+            <div className="flex items-center gap-1 bg-surface-container-low px-space-sm py-1.5 rounded">
+              <span className="font-label-sm text-label-sm text-outline uppercase pl-1">Region:</span>
+              <select
+                className="bg-transparent font-label-md text-label-md text-on-surface outline-none cursor-pointer pr-1"
+                value={regionFilter}
+                onChange={(e) => setRegionFilter(e.target.value)}
+              >
+                <option value="ALL">All Regions</option>
+                <option value="Europe">Europe</option>
+                <option value="North America">North America</option>
+                <option value="Middle East">Middle East</option>
+                <option value="Asia-Pacific">Asia-Pacific</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Inquiries Table Container */}
+        <div className="bg-surface-container-lowest rounded-lg shadow-sm overflow-hidden flex flex-col">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider">
+                  <th className="py-3 px-4 w-12 text-center">
+                    <input
+                      className="rounded-sm accent-primary-container cursor-pointer w-4 h-4"
+                      type="checkbox"
+                      onChange={toggleSelectAll}
+                    />
+                  </th>
+                  <th className="py-3 px-4">Inquiry Ref & Contact</th>
+                  <th className="py-3 px-4">Hospital / Entity</th>
+                  <th className="py-3 px-4">Subject & Scope Summary</th>
+                  <th className="py-3 px-4">Timestamp</th>
+                  <th className="py-3 px-4">Status & Priority</th>
+                  <th className="py-3 px-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-surface-container-high font-body-sm text-body-sm text-on-surface">
+                {filteredInquiries.map((item) => {
+                  const isSelected = item.id === selectedId;
+                  return (
+                    <tr
+                      key={item.id}
+                      className={`cursor-pointer transition-colors ${
+                        isSelected ? 'bg-primary-fixed/20 hover:bg-primary-fixed/30' : 'hover:bg-surface-container-low'
+                      }`}
+                      onClick={() => setSelectedId(item.id)}
+                    >
+                      <td
+                        className="py-4 px-4 text-center"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <input
+                          checked={!!selectedCheckboxes[item.id]}
+                          className="rounded-sm accent-primary-container cursor-pointer w-4 h-4"
+                          type="checkbox"
+                          onChange={() => toggleCheckbox(item.id)}
+                        />
+                      </td>
+                      <td className="py-4 px-4">
+                        <div className="flex flex-col">
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-label-md text-label-md font-bold text-on-surface">{item.ref}</span>
+                            {item.status === 'NEW' && <span className="w-1.5 h-1.5 rounded-full bg-error"></span>}
+                          </div>
+                          <span className="font-semibold text-primary">{item.name}</span>
+                          <span className="font-label-sm text-label-sm text-outline">{item.email}</span>
+                        </div>
+                      </td>
+                      <td className="py-4 px-4">
+                        <div className="flex flex-col">
+                          <span className="font-medium text-on-surface">{item.hospital}</span>
+                          <span className="font-label-sm text-label-sm text-outline flex items-center gap-1">
+                            <span className="material-symbols-outlined text-[13px]">location_on</span>
+                            {item.city}, {item.country}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="py-4 px-4 max-w-sm">
+                        <div className="flex flex-col">
+                          <span className="font-medium text-on-surface truncate">{item.subject}</span>
+                          <span className="font-label-sm text-label-sm text-on-surface-variant truncate">{item.scopeSummary}</span>
+                        </div>
+                      </td>
+                      <td className="py-4 px-4 whitespace-nowrap">
+                        <div className="flex flex-col">
+                          <span className="font-medium text-on-surface">{item.timestamp}</span>
+                          {item.tenderDeadline && (
+                            <span className="font-label-sm text-label-sm text-error font-medium">{item.tenderDeadline}</span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="py-4 px-4 whitespace-nowrap">
+                        <div className="flex flex-col gap-1 items-start">
+                          {item.status === 'NEW' && (
+                            <span className="px-2 py-0.5 rounded bg-error-container text-on-error-container font-label-sm text-label-sm font-semibold tracking-wide uppercase">
+                              NEW
+                            </span>
+                          )}
+                          {item.status === 'IN_PROGRESS' && (
+                            <span className="px-2 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm font-semibold uppercase">
+                              IN PROGRESS
+                            </span>
+                          )}
+                          {item.status === 'REPLIED' && (
+                            <span className="px-2 py-0.5 rounded bg-primary-fixed text-on-primary-fixed-variant font-label-sm text-label-sm font-semibold uppercase">
+                              REPLIED
+                            </span>
+                          )}
+                          {item.status === 'CLOSED' && (
+                            <span className="px-2 py-0.5 rounded bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-semibold uppercase">
+                              CLOSED / WON
+                            </span>
+                          )}
+                          {item.priority === 'HIGH' && (
+                            <span className="px-2 py-0.5 rounded bg-tertiary-fixed text-on-tertiary-fixed-variant font-label-sm text-label-sm font-semibold">
+                              URGENT TENDER
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td
+                        className="py-4 px-4 text-right whitespace-nowrap"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <div className="flex items-center justify-end gap-1.5">
+                          <button
+                            className={`px-2.5 py-1 font-label-md text-label-md rounded transition-colors shadow-sm ${
+                              isSelected ? 'bg-primary text-on-primary hover:bg-primary-container' : 'bg-surface-container hover:bg-surface-container-high text-on-surface'
+                            }`}
+                            type="button"
+                            onClick={() => setSelectedId(item.id)}
+                          >
+                            Inspect
+                          </button>
+                          <Link
+                            to={`/admin/email-compose?to=${encodeURIComponent(item.email)}&subject=${encodeURIComponent('RE: ' + item.subject)}&ref=${item.ref}`}
+                            className="p-1 text-on-surface-variant hover:text-on-surface rounded hover:bg-surface-container"
+                            title="Reply via Email Sender"
+                          >
+                            <span className="material-symbols-outlined text-[18px]">reply</span>
+                          </Link>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Table Footer / Pagination */}
+          <div className="px-space-md py-space-sm bg-surface-container-low flex flex-wrap items-center justify-between gap-space-sm font-label-md text-label-md text-on-surface-variant">
+            <span>
+              Showing <strong>1 - {filteredInquiries.length}</strong> of <strong>148</strong> total tenders
             </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Primary Two-Column Work Console */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start">
-        {/* LEFT COLUMN: Inquiry Stream (5 cols) */}
-        <div className="lg:col-span-5 flex flex-col gap-space-md">
-          <div className="flex items-center justify-between px-space-xs">
-            <div className="flex items-center gap-2">
-              <span className="font-label-technical text-label-technical text-secondary uppercase tracking-wider">
-                Inquiry Queue
-              </span>
-              <span className="font-label-code text-label-code text-on-surface-variant">
-                (Showing {filteredInquiries.length} of 46)
-              </span>
-            </div>
             <div className="flex items-center gap-1">
-              <button
-                type="button"
-                className="p-1 rounded text-secondary hover:bg-surface-container"
-                title="Sort by Newest"
-              >
-                <span className="material-symbols-outlined text-[18px]">swap_vert</span>
+              <button className="p-1 rounded text-outline disabled:opacity-40 cursor-not-allowed" disabled type="button">
+                <span className="material-symbols-outlined text-[18px]">chevron_left</span>
               </button>
-              <button
-                type="button"
-                className="p-1 rounded text-secondary hover:bg-surface-container"
-                title="Filter Critical"
-              >
-                <span className="material-symbols-outlined text-[18px]">filter_list</span>
-              </button>
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-space-sm">
-            {filteredInquiries.map((inq) => {
-              const isSelected = selectedInquiry?.id === inq.id;
-              return (
-                <div
-                  key={inq.id}
-                  onClick={() => selectInquiry(inq)}
-                  className={`flex flex-col p-space-md rounded-xl bg-surface-container-lowest transition-all cursor-pointer relative overflow-hidden ${
-                    isSelected
-                      ? 'shadow-md ring-2 ring-primary'
-                      : 'shadow-sm hover:shadow-md'
-                  }`}
-                >
-                  {isSelected && (
-                    <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-primary" />
-                  )}
-
-                  <div className={`flex items-start justify-between gap-2 ${isSelected ? 'pl-2' : ''}`}>
-                    <div className="flex flex-col">
-                      <div className="flex items-center gap-2">
-                        <span className="font-headline-sm text-headline-sm text-primary font-bold">
-                          {inq.name}
-                        </span>
-                        <span className="text-[14px]" title={inq.countryCode}>
-                          {inq.flag}
-                        </span>
-                      </div>
-                      <span className="font-label-technical text-label-technical text-secondary truncate max-w-[280px]">
-                        {inq.shortInstitution}
-                      </span>
-                    </div>
-
-                    {inq.status === 'NEW' && (
-                      <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 font-label-code text-label-code font-bold tracking-wider">
-                        NEW
-                      </span>
-                    )}
-                    {inq.status === 'READ' && (
-                      <span className="px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-code text-label-code font-semibold tracking-wider">
-                        READ
-                      </span>
-                    )}
-                    {inq.status === 'REPLIED' && (
-                      <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-900 font-label-code text-label-code font-semibold tracking-wider">
-                        REPLIED
-                      </span>
-                    )}
-                    {inq.status === 'ARCHIVED' && (
-                      <span className="px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-label-code text-label-code font-semibold tracking-wider">
-                        ARCHIVED
-                      </span>
-                    )}
-                  </div>
-
-                  <div className={`mt-space-sm ${isSelected ? 'pl-2' : ''}`}>
-                    <span className="font-label-lg text-label-lg text-on-surface font-semibold line-clamp-1">
-                      {inq.subject}
-                    </span>
-                    <p className="font-body-sm text-body-sm text-on-surface-variant line-clamp-2 mt-1">
-                      {inq.previewText}
-                    </p>
-                  </div>
-
-                  <div
-                    className={`mt-space-sm pt-space-xs flex items-center justify-between ${
-                      isSelected
-                        ? 'pl-2 bg-surface-container-low/50 -mx-space-md -mb-space-md p-space-sm rounded-b-xl'
-                        : ''
-                    }`}
-                  >
-                    <div className="flex items-center gap-1.5 text-secondary">
-                      <span className="material-symbols-outlined text-[14px]">schedule</span>
-                      <span className="font-label-code text-label-code">
-                        {inq.submittedRelative}
-                      </span>
-                    </div>
-                    <span
-                      className={`font-label-code text-label-code ${
-                        isSelected ? 'text-primary font-medium' : 'text-on-surface-variant'
-                      }`}
-                    >
-                      {inq.email}
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          <div className="flex items-center justify-between p-space-sm bg-surface-container-lowest rounded-lg shadow-sm">
-            <span className="font-label-code text-label-code text-secondary">Page 1 of 10</span>
-            <div className="flex items-center gap-1">
-              <button
-                type="button"
-                disabled
-                className="p-1 rounded text-outline hover:bg-surface-container disabled:opacity-40"
-              >
-                <span className="material-symbols-outlined text-[16px]">chevron_left</span>
-              </button>
-              <button
-                type="button"
-                className="px-2 py-0.5 rounded bg-primary text-on-primary font-label-code text-label-code"
-              >
-                1
-              </button>
-              <button
-                type="button"
-                className="px-2 py-0.5 rounded hover:bg-surface-container text-on-surface font-label-code text-label-code"
-              >
-                2
-              </button>
-              <button
-                type="button"
-                className="px-2 py-0.5 rounded hover:bg-surface-container text-on-surface font-label-code text-label-code"
-              >
-                3
-              </button>
-              <button
-                type="button"
-                className="p-1 rounded text-secondary hover:bg-surface-container"
-              >
-                <span className="material-symbols-outlined text-[16px]">chevron_right</span>
+              <span className="px-2.5 py-1 bg-primary text-on-primary font-bold rounded">1</span>
+              <button className="px-2.5 py-1 hover:bg-surface-container-high rounded text-on-surface" type="button">2</button>
+              <button className="px-2.5 py-1 hover:bg-surface-container-high rounded text-on-surface" type="button">3</button>
+              <span className="px-1 text-outline">...</span>
+              <button className="px-2.5 py-1 hover:bg-surface-container-high rounded text-on-surface" type="button">25</button>
+              <button className="p-1 rounded hover:bg-surface-container-high text-on-surface" type="button">
+                <span className="material-symbols-outlined text-[18px]">chevron_right</span>
               </button>
             </div>
           </div>
         </div>
 
-        {/* RIGHT COLUMN: Detailed Inquiry Dossier & Direct Reply Console (7 cols) */}
-        {selectedInquiry && (
-          <div className="lg:col-span-7 flex flex-col gap-space-lg">
-            {/* Dossier Panel */}
-            <div className="flex flex-col bg-surface-container-lowest rounded-xl shadow-md p-space-lg">
-              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-space-md">
-                <div className="flex flex-col gap-1">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 font-label-code text-label-code font-bold tracking-wider">
-                      {selectedInquiry.status} / {selectedInquiry.status === 'NEW' ? 'AWAITING RESPONSE' : 'DOSSIER ACTIVE'}
+        {/* Active Inquiry Inspection Workspace (High-Fidelity Slideout/Modal Inspector) */}
+        {activeInquiry && (
+          <div className="bg-surface-container-lowest rounded-lg shadow-xl overflow-hidden flex flex-col mt-space-sm border border-surface-container-high">
+            {/* Inspector Header Banner */}
+            <div className="bg-primary px-space-lg py-space-md text-on-primary flex flex-wrap items-center justify-between gap-space-md">
+              <div className="flex items-center gap-space-md">
+                <div className="w-10 h-10 rounded bg-primary-container text-on-primary flex items-center justify-center">
+                  <span className="material-symbols-outlined text-[24px]">precision_manufacturing</span>
+                </div>
+                <div className="flex flex-col">
+                  <div className="flex items-center gap-2">
+                    <span className="font-headline-sm text-headline-sm font-bold tracking-tight">
+                      Inquiry {activeInquiry.ref}
                     </span>
-                    <span className="font-label-code text-label-code text-secondary">
-                      TENDER ID: {selectedInquiry.tenderId}
-                    </span>
+                    {activeInquiry.status === 'NEW' && (
+                      <span className="px-2.5 py-0.5 bg-error text-on-error rounded font-label-sm text-label-sm uppercase tracking-wider font-bold">
+                        NEW - High Priority
+                      </span>
+                    )}
+                    {activeInquiry.tenderDeadline && (
+                      <span className="px-2.5 py-0.5 bg-tertiary-fixed text-on-tertiary-fixed-variant rounded font-label-sm text-label-sm font-semibold">
+                        {activeInquiry.tenderDeadline}
+                      </span>
+                    )}
                   </div>
-                  <h2 className="font-headline-md text-headline-md text-primary font-bold mt-1">
-                    {selectedInquiry.name}
-                  </h2>
-                  <div className="flex flex-wrap items-center gap-2 mt-0.5">
-                    <span className="font-label-lg text-label-lg text-on-surface-variant font-medium">
-                      {selectedInquiry.roleTitle}
-                    </span>
-                    <span className="text-outline">•</span>
-                    <span className="font-label-lg text-label-lg text-secondary">
-                      {selectedInquiry.institution}
-                    </span>
-                    <span className="text-[16px]">{selectedInquiry.flag}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 mt-1 text-emerald-800">
-                    <span
-                      className="material-symbols-outlined text-[16px]"
-                      style={{ fontVariationSettings: "'FILL' 1" }}
-                    >
-                      verified
-                    </span>
-                    <span className="font-label-technical text-label-technical font-medium">
-                      Verified Institutional Hospital Domain
-                    </span>
-                  </div>
-                </div>
-
-                {/* Dossier Triage Actions */}
-                <div className="flex items-center gap-1.5 self-start bg-surface-container-low p-1 rounded-lg">
-                  <button
-                    type="button"
-                    onClick={() => updateSelectedStatus('READ')}
-                    className="flex items-center gap-1 px-2.5 py-1.5 rounded hover:bg-surface-container-lowest text-secondary hover:text-primary transition-colors font-label-md text-label-md"
-                  >
-                    <span className="material-symbols-outlined text-[16px]">
-                      mark_email_read
-                    </span>
-                    <span>Mark Read</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => updateSelectedStatus('REPLIED')}
-                    className="flex items-center gap-1 px-2.5 py-1.5 rounded hover:bg-surface-container-lowest text-secondary hover:text-primary transition-colors font-label-md text-label-md"
-                  >
-                    <span className="material-symbols-outlined text-[16px]">check_circle</span>
-                    <span>Mark Replied</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => updateSelectedStatus('ARCHIVED')}
-                    className="p-1.5 rounded text-on-surface-variant hover:bg-error-container hover:text-on-error-container transition-colors"
-                    title="Archive Inquiry"
-                  >
-                    <span className="material-symbols-outlined text-[18px]">delete</span>
-                  </button>
-                </div>
-              </div>
-
-              <div className="mt-space-md py-space-xs px-space-sm bg-surface-container-low rounded flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-secondary text-[16px]">
-                    schedule
-                  </span>
-                  <span className="font-label-code text-label-code text-on-surface-variant">
-                    Submitted: {selectedInquiry.submittedAt}
-                  </span>
-                </div>
-                <span className="font-label-technical text-label-technical text-secondary font-medium">
-                  {selectedInquiry.submittedRelative}
-                </span>
-              </div>
-
-              {/* Clinical Logistics Matrix */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-space-sm mt-space-md">
-                <div className="p-space-sm bg-surface-container-low rounded-lg flex flex-col justify-between">
-                  <span className="font-label-technical text-label-technical text-secondary uppercase">
-                    Direct Institutional Email
-                  </span>
-                  <div className="flex items-center justify-between mt-1">
-                    <span className="font-label-code text-label-code text-primary font-semibold select-all">
-                      {selectedInquiry.email}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        navigator.clipboard?.writeText(selectedInquiry.email);
-                        showToast(`Copied ${selectedInquiry.email} to clipboard.`);
-                      }}
-                      className="p-1 hover:bg-surface-container rounded text-secondary"
-                      title="Copy email"
-                    >
-                      <span className="material-symbols-outlined text-[16px]">content_copy</span>
-                    </button>
-                  </div>
-                </div>
-
-                <div className="p-space-sm bg-surface-container-low rounded-lg flex flex-col justify-between">
-                  <span className="font-label-technical text-label-technical text-secondary uppercase">
-                    Direct Phone / Comms
-                  </span>
-                  <div className="flex items-center justify-between mt-1">
-                    <span className="font-label-code text-label-code text-primary font-semibold">
-                      {selectedInquiry.phone}
-                    </span>
-                    <span className="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-900 font-label-code text-label-code font-bold">
-                      WhatsApp OK
-                    </span>
-                  </div>
-                </div>
-
-                <div className="p-space-sm bg-surface-container-low rounded-lg flex flex-col justify-between">
-                  <span className="font-label-technical text-label-technical text-secondary uppercase">
-                    Hospital Facility ID
-                  </span>
-                  <span className="font-label-code text-label-code text-primary font-semibold mt-1">
-                    {selectedInquiry.facilityId}
-                  </span>
-                </div>
-
-                <div className="p-space-sm bg-surface-container-low rounded-lg flex flex-col justify-between">
-                  <span className="font-label-technical text-label-technical text-secondary uppercase">
-                    Target Delivery Logistics
-                  </span>
-                  <span className="font-label-code text-label-code text-primary font-semibold mt-1">
-                    {selectedInquiry.deliveryLogistics}
+                  <span className="font-body-sm text-body-sm text-on-primary-container">
+                    {activeInquiry.subject}
                   </span>
                 </div>
               </div>
 
-              {/* Inquiry Body */}
-              <div className="mt-space-lg flex flex-col gap-space-xs">
-                <span className="font-label-technical text-label-technical text-secondary uppercase tracking-wider">
-                  Inquiry Body &amp; Clinical Specification
-                </span>
-                <div className="p-space-md rounded-lg bg-surface-container-low text-on-surface">
-                  <div className="font-headline-sm text-headline-sm text-primary font-bold mb-2">
-                    Subject: {selectedInquiry.subject}
-                  </div>
-                  <div className="font-body-md text-body-md space-y-3 leading-relaxed">
-                    <p>Dear BLUENEEDLE Catalog &amp; Technical Sales Team,</p>
-                    <p>{selectedInquiry.previewText}</p>
-                    <ul className="list-disc pl-5 space-y-1 font-label-code text-label-code text-on-surface">
-                      {selectedInquiry.specLines.map((line) => (
-                        <li key={line.item}>
-                          <strong className="text-primary font-bold">{line.qty}</strong> {line.item}
-                        </li>
-                      ))}
-                    </ul>
-                    <p>{selectedInquiry.closingBody}</p>
-                    <p className="font-label-technical text-label-technical text-secondary pt-2">
-                      With surgical regards,
-                      <br />
-                      <strong>{selectedInquiry.name}</strong>
-                      <br />
-                      {selectedInquiry.roleTitle}
-                      <br />
-                      {selectedInquiry.institution}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Attachment Strip */}
-              <div className="mt-space-md p-space-sm bg-surface-container rounded-lg flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2 min-w-0">
-                  <span className="material-symbols-outlined text-secondary text-[20px] shrink-0">
-                    attachment
-                  </span>
-                  <div className="flex flex-col min-w-0">
-                    <span className="font-label-lg text-label-lg text-primary font-medium truncate">
-                      {selectedInquiry.attachmentName}
-                    </span>
-                    <span className="font-label-code text-label-code text-secondary">
-                      {selectedInquiry.attachmentMeta}
-                    </span>
-                  </div>
-                </div>
+              <div className="flex items-center gap-space-xs">
                 <button
+                  className="p-2 rounded hover:bg-primary-container transition-colors text-on-primary"
+                  title="Print Technical Summary"
                   type="button"
-                  onClick={() => showToast(`Downloading ${selectedInquiry.attachmentName}...`)}
-                  className="px-space-sm py-1 rounded bg-surface-container-lowest hover:bg-surface-container-high text-primary font-label-technical text-label-technical font-semibold flex items-center gap-1 shadow-sm shrink-0"
+                  onClick={() => window.print()}
                 >
-                  <span className="material-symbols-outlined text-[16px]">download</span>
-                  <span>Download Spec</span>
+                  <span className="material-symbols-outlined text-[20px]">print</span>
                 </button>
+                <div className="h-6 w-[1px] bg-primary-container"></div>
+                <Link
+                  to={`/admin/email-compose?to=${encodeURIComponent(activeInquiry.email)}&subject=${encodeURIComponent('RE: ' + activeInquiry.subject)}&ref=${activeInquiry.ref}`}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary-container hover:bg-primary-fixed hover:text-on-primary-fixed rounded text-on-primary font-label-md text-label-md transition-colors"
+                >
+                  <span className="material-symbols-outlined text-[18px]">forward_to_inbox</span>
+                  <span>Dispatch Quote</span>
+                </Link>
               </div>
             </div>
 
-            {/* QUICK REPLY CONSOLE */}
-            <div className="flex flex-col bg-surface-container-lowest rounded-xl shadow-md p-space-lg">
-              <div className="flex items-center justify-between pb-space-sm flex-wrap gap-2">
-                <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-primary text-[22px]">reply</span>
-                  <span className="font-headline-sm text-headline-sm text-primary font-bold">
-                    Direct Institutional Dispatch Console
-                  </span>
+            {/* Inspector Details Grid */}
+            <div className="p-space-lg grid grid-cols-1 lg:grid-cols-3 gap-space-lg">
+              {/* Left 2 Cols: Details & Scope */}
+              <div className="lg:col-span-2 flex flex-col gap-space-md">
+                <div className="p-space-md bg-surface-container-low rounded-lg flex flex-col gap-2">
+                  <div className="flex items-center justify-between">
+                    <span className="font-label-sm text-label-sm uppercase tracking-wider text-outline font-semibold">
+                      Client Procurement Dossier
+                    </span>
+                    <span className="font-label-sm text-label-sm text-outline">Received: {activeInquiry.timestamp}</span>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2">
+                    <div>
+                      <div className="font-label-sm text-label-sm text-outline">Surgeon / Contact</div>
+                      <div className="font-label-md text-label-md font-semibold text-on-surface">{activeInquiry.name}</div>
+                      <div className="font-body-sm text-body-sm text-primary">{activeInquiry.email}</div>
+                    </div>
+                    <div>
+                      <div className="font-label-sm text-label-sm text-outline">Healthcare Entity</div>
+                      <div className="font-label-md text-label-md font-semibold text-on-surface">{activeInquiry.hospital}</div>
+                      <div className="font-body-sm text-body-sm text-outline">{activeInquiry.city}, {activeInquiry.country}</div>
+                    </div>
+                    <div>
+                      <div className="font-label-sm text-label-sm text-outline">Discipline & Volume</div>
+                      <div className="font-label-md text-label-md font-semibold text-on-surface">{activeInquiry.discipline}</div>
+                      <div className="font-body-sm text-body-sm text-on-surface-variant font-medium">{activeInquiry.units} Instruments Required</div>
+                    </div>
+                  </div>
                 </div>
-                <span className="font-label-code text-label-code text-secondary">
-                  Authenticated Operator: {operatorName}
-                </span>
+
+                {/* Tender Specification Lines */}
+                <div className="flex flex-col gap-2">
+                  <h4 className="font-label-md text-label-md uppercase tracking-wider font-semibold text-on-surface">
+                    Specified Surgical Configurations & Metallurgy
+                  </h4>
+                  <div className="space-y-2">
+                    {activeInquiry.specLines.map((line, idx) => (
+                      <div key={idx} className="p-space-sm bg-surface-container-lowest border border-surface-container-high rounded flex items-start gap-3">
+                        <span className="px-2 py-1 bg-surface-container rounded font-label-sm text-label-sm font-bold text-primary whitespace-nowrap">
+                          {line.qty}
+                        </span>
+                        <div className="font-body-sm text-body-sm text-on-surface">{line.item}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Technical Note / Message */}
+                <div className="flex flex-col gap-1.5 p-space-md bg-surface-container-lowest border border-surface-container-high rounded-lg">
+                  <span className="font-label-sm text-label-sm uppercase tracking-wider font-semibold text-outline">
+                    Client RFP Direct Message & Notes
+                  </span>
+                  <p className="font-body-md text-body-md text-on-surface italic">
+                    "{activeInquiry.message}"
+                  </p>
+                </div>
               </div>
 
-              <div className="flex flex-col gap-1.5 mt-space-sm">
-                <label className="font-label-technical text-label-technical text-secondary uppercase">
-                  Quick Response Pre-Sets
-                </label>
-                <div className="flex flex-wrap items-center gap-2">
-                  {QUICK_PRESETS.map((preset) => (
+              {/* Right Col: Triage Actions & Workflow */}
+              <div className="flex flex-col gap-space-md bg-surface-container-low p-space-md rounded-lg">
+                <span className="font-label-sm text-label-sm uppercase tracking-wider font-semibold text-outline">
+                  Triage Status Control
+                </span>
+
+                <div className="space-y-2">
+                  {(['NEW', 'IN_PROGRESS', 'REPLIED', 'CLOSED'] as const).map((st) => (
                     <button
-                      key={preset.id}
+                      key={st}
                       type="button"
-                      onClick={() => handlePresetClick(preset.id)}
-                      className={`px-3 py-1.5 rounded font-label-md text-label-md transition-all ${
-                        activePreset === preset.id
-                          ? 'bg-primary text-on-primary font-semibold'
-                          : 'bg-surface-container-low text-on-surface hover:bg-surface-container'
+                      onClick={() => updateStatus(activeInquiry.id, st)}
+                      className={`w-full py-2 px-3 rounded flex items-center justify-between font-label-md text-label-md transition-all ${
+                        activeInquiry.status === st
+                          ? 'bg-primary text-on-primary font-bold shadow-sm'
+                          : 'bg-surface-container-lowest text-on-surface hover:bg-surface-container-high'
                       }`}
                     >
-                      {preset.label}
+                      <span>
+                        {st === 'NEW' && 'Mark as New (Action Required)'}
+                        {st === 'IN_PROGRESS' && 'Set In Progress (Engineering)'}
+                        {st === 'REPLIED' && 'Set as Replied (Formal Quote)'}
+                        {st === 'CLOSED' && 'Mark as Closed / Won (PO)'}
+                      </span>
+                      {activeInquiry.status === st && (
+                        <span className="material-symbols-outlined text-[18px]">check</span>
+                      )}
                     </button>
                   ))}
                 </div>
-              </div>
 
-              <div className="flex flex-col gap-1 mt-space-md">
-                <label className="font-label-technical text-label-technical text-secondary uppercase">
-                  Outgoing Subject Line
-                </label>
-                <input
-                  type="text"
-                  value={replySubject}
-                  onChange={(e) => setReplySubject(e.target.value)}
-                  className="w-full px-3 py-2 rounded bg-surface-container-low text-on-surface font-body-sm text-body-sm focus:outline-none focus:bg-surface-container-lowest focus:ring-1 focus:ring-secondary"
-                />
-              </div>
+                <div className="h-[1px] bg-surface-container-highest my-1"></div>
 
-              <div className="flex flex-col mt-space-md bg-surface-container-low rounded-lg overflow-hidden">
-                <div className="flex items-center gap-1 p-2 bg-surface-container flex-wrap">
-                  <button
-                    type="button"
-                    className="p-1 rounded hover:bg-surface-container-lowest text-secondary"
-                    title="Bold"
-                  >
-                    <span className="material-symbols-outlined text-[18px]">format_bold</span>
-                  </button>
-                  <button
-                    type="button"
-                    className="p-1 rounded hover:bg-surface-container-lowest text-secondary"
-                    title="Italic"
-                  >
-                    <span className="material-symbols-outlined text-[18px]">format_italic</span>
-                  </button>
-                  <button
-                    type="button"
-                    className="p-1 rounded hover:bg-surface-container-lowest text-secondary"
-                    title="Bulleted List"
-                  >
-                    <span className="material-symbols-outlined text-[18px]">
-                      format_list_bulleted
-                    </span>
-                  </button>
-                  <button
-                    type="button"
-                    className="p-1 rounded hover:bg-surface-container-lowest text-secondary"
-                    title="Table Insert"
-                  >
-                    <span className="material-symbols-outlined text-[18px]">table</span>
-                  </button>
-                  <button
-                    type="button"
-                    className="p-1 rounded hover:bg-surface-container-lowest text-secondary"
-                    title="Attach DIN Spec Link"
-                  >
-                    <span className="material-symbols-outlined text-[18px]">link</span>
-                  </button>
-                  <span className="w-px h-4 bg-outline-variant mx-1" />
-                  <span className="font-label-code text-label-code text-on-surface-variant">
-                    Signature: {operatorName} (Chief Metallurgist / QA Lead)
+                <div className="flex flex-col gap-2">
+                  <span className="font-label-sm text-label-sm uppercase tracking-wider font-semibold text-outline">
+                    Compliance & QA Attachments
                   </span>
-                </div>
-                <textarea
-                  rows={7}
-                  value={replyBody}
-                  onChange={(e) => setReplyBody(e.target.value)}
-                  className="w-full p-space-md bg-surface-container-low text-on-surface font-body-sm text-body-sm focus:outline-none leading-relaxed resize-y"
-                />
-              </div>
-
-              <div className="mt-space-md flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-space-sm p-space-sm bg-surface-container-low rounded-lg">
-                <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-secondary text-[20px]">
-                    picture_as_pdf
-                  </span>
-                  <div className="flex flex-col">
-                    <span className="font-label-technical text-label-technical text-primary font-semibold">
-                      Attach Quotation PDF / Material Test Report (EN 10204 3.1)
-                    </span>
-                    <span className="font-label-code text-label-code text-secondary">
-                      Auto-attaching: BLUENEEDLE_RFQ_{selectedInquiry.tenderId}.pdf (1.2 MB)
-                    </span>
+                  <div className="p-2.5 bg-surface-container-lowest rounded border border-surface-container-high flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="material-symbols-outlined text-primary text-[20px]">description</span>
+                      <div className="flex flex-col text-left">
+                        <span className="font-label-sm text-label-sm font-semibold text-on-surface">DIN_ISO_13485_Conformity.pdf</span>
+                        <span className="font-label-sm text-label-sm text-outline">1.4 MB • Auto-attached</span>
+                      </div>
+                    </div>
+                    <span className="material-symbols-outlined text-outline text-[18px] cursor-pointer hover:text-on-surface">download</span>
                   </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => showToast('Standard EN 10204 3.1 test packet verified.')}
-                  className="px-space-md py-1.5 rounded bg-surface-container hover:bg-surface-container-high text-on-surface font-label-technical text-label-technical transition-colors"
-                >
-                  Change File
-                </button>
-              </div>
-
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-space-md mt-space-lg pt-space-md">
-                <label className="flex items-center gap-2 text-secondary cursor-pointer select-none">
-                  <input
-                    type="checkbox"
-                    checked={archiveOnSend}
-                    onChange={(e) => setArchiveOnSend(e.target.checked)}
-                    className="w-4 h-4 rounded text-primary focus:ring-0 cursor-pointer accent-primary"
-                  />
-                  <span className="font-label-md text-label-md">
-                    Send copy to procurement portal &amp; mark replied in ERP
-                  </span>
-                </label>
-
-                <div className="flex items-center gap-space-sm w-full sm:w-auto">
-                  <Link
-                    to={`/admin/email?to=${encodeURIComponent(selectedInquiry.email)}&subject=${encodeURIComponent(replySubject)}`}
-                    className="px-space-md py-2.5 rounded bg-surface-container-low text-secondary hover:bg-surface-container font-label-lg text-label-lg transition-colors flex items-center gap-1.5"
-                  >
-                    <span className="material-symbols-outlined text-[18px]">outgoing_mail</span>
-                    <span>Open in Email Sender</span>
-                  </Link>
-                  <button
-                    type="button"
-                    onClick={() => showToast(`Draft response saved for ${selectedInquiry.tenderId}.`)}
-                    className="px-space-md py-2.5 rounded bg-surface-container-low text-secondary hover:bg-surface-container font-label-lg text-label-lg transition-colors"
-                  >
-                    Save Draft
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleSendDispatch}
-                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-space-lg py-2.5 rounded bg-primary-container text-on-primary hover:bg-primary transition-all font-label-lg text-label-lg font-semibold tracking-wide shadow-sm"
-                  >
-                    <span className="material-symbols-outlined text-[18px]">send</span>
-                    <span>Send Official Response &amp; Dispatch RFQ</span>
-                  </button>
+                  <div className="p-2.5 bg-surface-container-lowest rounded border border-surface-container-high flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="material-symbols-outlined text-primary text-[20px]">assignment</span>
+                      <div className="flex flex-col text-left">
+                        <span className="font-label-sm text-label-sm font-semibold text-on-surface">ASTM_F1089_Boil_Test_Pass.pdf</span>
+                        <span className="font-label-sm text-label-sm text-outline">890 KB • Metallurgical Lab</span>
+                      </div>
+                    </div>
+                    <span className="material-symbols-outlined text-outline text-[18px] cursor-pointer hover:text-on-surface">download</span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         )}
       </div>
-
-      {toastMsg && (
-        <div className="fixed bottom-6 right-6 z-50 bg-primary-container text-on-primary px-space-md py-3 rounded-xl shadow-xl flex items-center gap-3">
-          <span className="material-symbols-outlined text-emerald-400 text-[18px]">
-            check_circle
-          </span>
-          <span className="font-label-lg text-label-lg font-medium">{toastMsg}</span>
-        </div>
-      )}
     </div>
   );
 };

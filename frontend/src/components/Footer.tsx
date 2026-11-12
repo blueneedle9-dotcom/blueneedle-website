@@ -3,147 +3,130 @@ import { Link } from "react-router-dom";
 import { LOGO_URL } from "../data/catalog";
 
 interface FooterProps {
-  onOpenRfq: (targetLabel?: string) => void;
+  onOpenRfq?: (targetLabel?: string) => void;
 }
 
 export const Footer: React.FC<FooterProps> = ({ onOpenRfq }) => {
   return (
-    <footer className="w-full bg-primary-container text-on-primary">
-      <div className="w-full px-gutter-desktop max-w-[1440px] mx-auto py-space-xl">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-gutter-desktop">
-          <div className="lg:col-span-2 pr-space-md">
-            <div className="flex items-center gap-space-sm mb-space-sm">
+    <footer className="w-full bg-[#1C2826] text-surface-container-high border-t border-outline-variant/20 pt-space-xxl pb-space-xl">
+      <div className="max-w-[1440px] mx-auto px-gutter-mobile lg:px-margin">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-space-xl pb-space-xl border-b border-outline-variant/15">
+          {/* Column 1: Brand & Provenance */}
+          <div className="flex flex-col">
+            <div className="flex items-center gap-space-sm mb-space-md">
               <img
-                alt="BLUENEEDLE Logo"
+                alt="Vanguard Surgical Instruments Logo"
                 className="h-7 w-auto object-contain brightness-0 invert"
                 src={LOGO_URL}
               />
-              <span className="font-headline-sm text-headline-sm uppercase text-on-primary">
-                BLUENEEDLE
+              <span className="font-headline-sm text-headline-sm uppercase tracking-tight text-surface-container-lowest font-semibold">
+                Vanguard
               </span>
             </div>
-            <p className="font-body-sm text-body-sm text-on-primary-container mb-space-md leading-relaxed">
-              Precision surgical instrument manufacturing &amp; export based in
-              Sialkot, Pakistan. Engineered with certified European stainless
-              steel alloys, conforming to international CE, ISO 13485, and cGMP
-              compliance standards.
+            <p className="font-body-sm text-body-sm text-surface-container mb-space-md leading-relaxed">
+              Engineered to sub-micron mechanical tolerances. Precision-calibrated stainless steel and grade 5 titanium instrumentation supplying accredited hospital theaters globally.
             </p>
-            <div className="flex items-center gap-space-sm font-label-technical text-label-technical text-tertiary-fixed">
-              <span className="material-symbols-outlined text-[16px]">
-                verified
+            <div className="flex flex-wrap items-center gap-space-xs">
+              <span className="font-label-sm text-label-sm uppercase tracking-wider px-space-sm py-0.5 rounded border border-outline-variant/40 text-on-tertiary-container">
+                ISO 13485:2016
               </span>
-              <span>ISO 13485:2016 Certified Facility</span>
+              <span className="font-label-sm text-label-sm uppercase tracking-wider px-space-sm py-0.5 rounded border border-outline-variant/40 text-on-tertiary-container">
+                CE 0123
+              </span>
+              <span className="font-label-sm text-label-sm uppercase tracking-wider px-space-sm py-0.5 rounded border border-outline-variant/40 text-on-tertiary-container">
+                FDA Class II
+              </span>
             </div>
           </div>
 
-          <div>
-            <h4 className="font-label-lg text-label-lg text-on-primary uppercase tracking-wider mb-space-md">
-              Product Categories
-            </h4>
-            <ul className="space-y-space-xs font-body-sm text-body-sm text-on-primary-container">
-              <li className="hover:text-on-primary transition-colors">
-                <Link to="/products?category=Surgical+Instruments">
-                  Surgical Instruments
-                </Link>
+          {/* Column 2: Quick Links */}
+          <div className="flex flex-col">
+            <span className="font-label-md text-label-md uppercase tracking-wider text-surface-container-lowest mb-space-md font-semibold">
+              Quick Links
+            </span>
+            <ul className="flex flex-col gap-space-sm font-body-sm text-body-sm text-surface-container">
+              <li className="hover:text-surface-container-lowest transition-colors">
+                <Link to="/about-us">Corporate Profile</Link>
               </li>
-              <li className="hover:text-on-primary transition-colors">
-                <Link to="/products?category=Dental+Instruments">
-                  Dental Instruments
-                </Link>
+              <li className="hover:text-surface-container-lowest transition-colors">
+                <a href="/#manufacturing">Sterile Facility Capabilities</a>
               </li>
-              <li className="hover:text-on-primary transition-colors">
-                <Link to="/products?category=Orthopedic+Instruments">
-                  Orthopedic Implants &amp; Sets
-                </Link>
+              <li className="hover:text-surface-container-lowest transition-colors">
+                <a href="/#quality-assurance">Metallurgical Compliance &amp; QA</a>
               </li>
-              <li className="hover:text-on-primary transition-colors">
-                <Link to="/products?category=Ophthalmic+Instruments">
-                  Ophthalmic Microsurgery
-                </Link>
+              <li className="hover:text-surface-container-lowest transition-colors">
+                <button
+                  type="button"
+                  onClick={() => onOpenRfq?.()}
+                  className="text-left hover:text-surface-container-lowest transition-colors"
+                >
+                  Procurement Tender Portal
+                </button>
               </li>
-              <li className="hover:text-on-primary transition-colors">
-                <Link to="/products?category=Scissors+%26+Shears">
-                  Scissors &amp; Micro Forceps
-                </Link>
-              </li>
-              <li className="hover:text-on-primary transition-colors">
-                <Link to="/products?category=Needle+Holders">
-                  Tungsten Carbide Needle Holders
-                </Link>
+              <li className="hover:text-surface-container-lowest transition-colors">
+                <a href="/#inquiry-section">OEM Technical Drawings</a>
               </li>
             </ul>
           </div>
 
-          <div>
-            <h4 className="font-label-lg text-label-lg text-on-primary uppercase tracking-wider mb-space-md">
-              Quality &amp; OEM
-            </h4>
-            <ul className="space-y-space-xs font-body-sm text-body-sm text-on-primary-container">
-              <li className="hover:text-on-primary transition-colors">
-                <Link to="/about-us#metallurgy">Metallurgical Standards</Link>
+          {/* Column 3: Surgical Product Categories */}
+          <div className="flex flex-col">
+            <span className="font-label-md text-label-md uppercase tracking-wider text-surface-container-lowest mb-space-md font-semibold">
+              Surgical Product Categories
+            </span>
+            <ul className="flex flex-col gap-space-sm font-body-sm text-body-sm text-surface-container">
+              <li className="hover:text-surface-container-lowest transition-colors">
+                <Link to="/products?discipline=General%20Surgery">Cardiovascular &amp; Thoracic</Link>
               </li>
-              <li className="hover:text-on-primary transition-colors">
-                <Link to="/about-us">Custom OEM Stamping</Link>
+              <li className="hover:text-surface-container-lowest transition-colors">
+                <Link to="/products?discipline=Diagnostic%20%26%20Micro">Neurosurgery &amp; Micro-Dissection</Link>
               </li>
-              <li className="hover:text-on-primary transition-colors">
-                <Link to="/about-us">Regulatory Certifications</Link>
+              <li className="hover:text-surface-container-lowest transition-colors">
+                <Link to="/products?discipline=Orthopedic%20Suite">Orthopedic &amp; Bone Rongeurs</Link>
               </li>
-              <li className="hover:text-on-primary transition-colors">
-                <Link to="/products/BN-SC-1021-TC">
-                  Sterilization &amp; Passivation
-                </Link>
+              <li className="hover:text-surface-container-lowest transition-colors">
+                <Link to="/products?discipline=Retractors%20%26%20Specula">Minimally Invasive Laparoscopy</Link>
               </li>
-              <li className="hover:text-on-primary transition-colors">
-                <Link to="/create-account">Hospital Procurement Terms</Link>
+              <li className="hover:text-surface-container-lowest transition-colors">
+                <Link to="/products?discipline=Scissors%20%26%20Cutting">Ophthalmic Fine Forceps</Link>
               </li>
             </ul>
           </div>
 
-          <div>
-            <h4 className="font-label-lg text-label-lg text-on-primary uppercase tracking-wider mb-space-md">
-              Client Portal &amp; Export
-            </h4>
-            <div className="space-y-space-sm font-body-sm text-body-sm text-on-primary-container">
-              <ul className="space-y-space-xs font-body-sm text-body-sm text-on-primary-container mb-space-sm">
-                <li className="hover:text-on-primary transition-colors">
-                  <Link to="/login">Distributor Sign In</Link>
-                </li>
-                <li className="hover:text-on-primary transition-colors">
-                  <Link to="/create-account">Register Institutional Account</Link>
-                </li>
-                <li className="hover:text-on-primary transition-colors">
-                  <Link to="/forgot-password">Reset Credentials</Link>
-                </li>
-                <li className="hover:text-on-primary transition-colors">
-                  <Link to="/admin">Operations Admin Console</Link>
-                </li>
-              </ul>
-              <p className="font-label-technical text-label-technical text-on-primary">
-                info@blueneedle.com
-                <br />
-                +92 52 4589201
-              </p>
-              <button
-                className="inline-block bg-primary text-on-primary font-label-technical text-label-technical px-space-md py-space-xs rounded uppercase hover:bg-surface-container-high hover:text-on-surface transition-colors mt-space-xs"
-                onClick={() => onOpenRfq("Export RFQ Desk")}
-                type="button"
-              >
-                Export RFQ Desk
-              </button>
+          {/* Column 4: Global HQ & Inquiries */}
+          <div className="flex flex-col">
+            <span className="font-label-md text-label-md uppercase tracking-wider text-surface-container-lowest mb-space-md font-semibold">
+              Global Headquarters &amp; Inquiries
+            </span>
+            <div className="flex flex-col gap-space-sm font-body-sm text-body-sm text-surface-container leading-relaxed">
+              <div>
+                <span className="font-label-sm text-label-sm uppercase tracking-wider text-outline-variant block mb-1">
+                  Manufacturing &amp; Export Division
+                </span>
+                Vanguard Medical Tower, Level 14<br />
+                Zurich Technology Park, CH-8005 Switzerland
+              </div>
+              <div className="mt-space-xs">
+                <span className="font-label-sm text-label-sm uppercase tracking-wider text-outline-variant block mb-1">
+                  Direct Logistics
+                </span>
+                Tel: +41 44 892 4100<br />
+                Email: export@vanguard-surgical.com
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <div className="w-full bg-primary py-space-sm">
-        <div className="w-full px-gutter-desktop max-w-[1440px] mx-auto flex flex-col md:flex-row items-center justify-between gap-space-sm font-label-technical text-label-technical text-on-primary-container">
-          <span>
-            © BLUENEEDLE Surgical Instruments. All specifications subject to
-            international medical standards. No retail sales.
-          </span>
-          <span className="uppercase tracking-wider text-tertiary-fixed">
-            B2B Institutional Export Gateway
-          </span>
+        {/* Footer Bottom Bar */}
+        <div className="pt-space-lg flex flex-col md:flex-row items-start md:items-center justify-between gap-space-md text-outline-variant font-label-md text-label-md">
+          <div>
+            © {new Date().getFullYear()} Vanguard Surgical Precision AG. All rights reserved. International Medical Device Directive compliant.
+          </div>
+          <div className="flex flex-wrap items-center gap-space-lg">
+            <span>Customs Tariff Schedule: HS 9018.90</span>
+            <span className="hover:text-surface-container-lowest cursor-pointer transition-colors">Terms of Supply</span>
+            <span className="hover:text-surface-container-lowest cursor-pointer transition-colors">Sterilization Protocols</span>
+          </div>
         </div>
       </div>
     </footer>

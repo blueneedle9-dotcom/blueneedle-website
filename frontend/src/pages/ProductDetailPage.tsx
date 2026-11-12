@@ -87,16 +87,16 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
 }) => {
   const { id } = useParams<{ id: string }>();
   const matchedProduct = CATALOGUE_PRODUCTS.find(
-    (p) => p.id === id || p.ref === id
+    (p: any) => p.id === id || p.sku === id || p.ref === id
   );
 
   const isMayoDefault = !matchedProduct || matchedProduct.id === "BN-SC-1021-TC";
   const displayTitle = isMayoDefault
     ? "Mayo Dissecting Scissors"
-    : matchedProduct.title;
+    : matchedProduct.title || matchedProduct.name;
   const displayRef = isMayoDefault
     ? "BN-SC-1021-TC • TUNGSTEN CARBIDE INLAYS"
-    : `${matchedProduct.ref} • ${matchedProduct.alloy.toUpperCase()}`;
+    : `${matchedProduct.ref || matchedProduct.sku} • ${(matchedProduct.alloy || matchedProduct.material || 'SURGICAL STEEL').toUpperCase()}`;
 
   const [selectedSpecimenIdx, setSelectedSpecimenIdx] = useState<number | null>(
     null
@@ -270,7 +270,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
 
               {/* Interactive Detail Thumbnail Strip */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-space-sm">
-                {SPECIMEN_VIEWS.map((view, idx) => {
+                {SPECIMEN_VIEWS.map((view: any, idx: number) => {
                   const active = selectedSpecimenIdx === idx;
                   return (
                     <button
@@ -361,7 +361,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                     <span>
                       {isMayoDefault
                         ? "Cat. Scissors"
-                        : matchedProduct.categoryTags[0]}
+                        : (matchedProduct.categoryTags && matchedProduct.categoryTags[0]) || matchedProduct.discipline}
                     </span>
                     <span>•</span>
                     <span>

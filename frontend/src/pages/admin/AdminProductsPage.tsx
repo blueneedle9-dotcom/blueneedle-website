@@ -1,173 +1,107 @@
-import React, { useMemo, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
-import { useAdminContext } from '../../components/AdminLayout';
-
-interface ProductRecord {
-  id: string;
-  name: string;
-  sku: string;
-  standardRef: string;
-  gtin: string;
-  category: string;
-  subCategory: string;
-  alloy: string;
-  alloyFilter: string;
-  finishNote: string;
-  badge?: string;
-  dateAdded: string;
-  batchNo: string;
-  status: 'Published' | 'Draft Review';
-  imageUrl: string;
-  imageAlt: string;
-}
-
-const INITIAL_PRODUCTS: ProductRecord[] = [
-  {
-    id: 'prod-1',
-    name: 'Mayo Dissecting Scissors (Straight 170mm)',
-    sku: 'BN-SC-1021-TC',
-    standardRef: 'DIN 58298',
-    gtin: '0401289192003',
-    category: 'Surgical Instruments',
-    subCategory: 'Dissecting / Cutting',
-    alloy: 'AISI 420B + Tungsten Carbide',
-    alloyFilter: 'tc',
-    finishNote: 'Electropolished Satin, 54-58 HRC',
-    badge: 'TC-GOLD',
-    dateAdded: 'Oct 24, 2024',
-    batchNo: 'Audit Batch #882',
-    status: 'Published',
-    imageUrl:
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuBeyRGF_Xyu4CE_mEYcO7VSIDBlsREot-G_25E7GJ_uH7Ji6aIL_u0MCTK6GpNrPoqSs0qNFFHTGcxPkEjQy95ghrF3155M1UZN8SiB_oabuaIYCQdKBmFdK856toWNPnLi5ejIXwDPWYcaqupmier393IYihzPGZGf868cxV9qj2TzypMgGd7jx_t8AB6ycftjhE35PnTxnZIIS1Fvqf7O6YOT_0B-kiyv5UYB3nI',
-    imageAlt: 'High precision stainless steel Mayo Dissecting Scissors',
-  },
-  {
-    id: 'prod-2',
-    name: 'Halsted Mosquito Forceps (Curved 12.5cm)',
-    sku: 'BN-FC-2044',
-    standardRef: 'DIN 1.4021 Interlock',
-    gtin: '0401289192044',
-    category: 'Surgical Instruments',
-    subCategory: 'Hemostatic Clamps',
-    alloy: 'AISI 420B Martensitic Satin',
-    alloyFilter: 'martensitic',
-    finishNote: 'Mirror Polish, 46-48 HRC',
-    badge: 'PRECISION',
-    dateAdded: 'Oct 23, 2024',
-    batchNo: 'Batch #879-C',
-    status: 'Published',
-    imageUrl:
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuBDVGrDoKuAvB8HgIvjWCIfkVsE0_DKVH5MKvbS7IErkY6sRK9IZcWjPbuyllC02Egmi_R-tunOp97k88FWH-KxN_r33ZuhxbSEwO-DBu4EIx45SAVGqYw7B635Ni1iGaDOrtZ8lDqusrFJbh9kG1UH7luK7KakXuXcvkhqlM2TCUF4NTEvID6w7gm34bnC1sd7Z_CstOTNWg-3N4CQ29nBXmgftjIN5SFP1IyoGLg',
-    imageAlt: 'Halsted Mosquito Forceps curved surgical clamp',
-  },
-  {
-    id: 'prod-3',
-    name: 'Crile-Wood Needle Holder (Gold Handle TC)',
-    sku: 'BN-NH-3105',
-    standardRef: 'Suture 3-0 to 6-0',
-    gtin: '0401289193105',
-    category: 'Needle Holders',
-    subCategory: 'Vascular & General',
-    alloy: 'AISI 420B + Tungsten Carbide (TC)',
-    alloyFilter: 'tc',
-    finishNote: 'Gold Plated Ring, 0.4mm Pitch',
-    badge: 'TC-GOLD',
-    dateAdded: 'Oct 20, 2024',
-    batchNo: 'Batch #871-A',
-    status: 'Published',
-    imageUrl:
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuAvJtWO7P1ChDcChxVOsKwt4vrUiq5DO0-8_jV-A7nIpohTL705ziNBHyuOp2IN0IzU8Oll3VlZs989TLcZN-8RygfIF-xWWPRdV221d5m_jRkesvRB8UNC5mf2Bb-fPnLoISkxhwkJhFu13RogpWY4KbDAGsdJIj9r4SaO7Yl_pJaOmolBZZopq9n7uQ7b7foCcbyjf-8dR_xMtVt97ltX3Z-u7bmDKhUB9Fmt9ik',
-    imageAlt: 'Crile-Wood Surgical Needle Holder with gold dipped handles',
-  },
-  {
-    id: 'prod-4',
-    name: 'Beyer Bone Rongeur (Double-Action 18.0cm)',
-    sku: 'BN-OR-6120',
-    standardRef: 'Jaw Width: 3.5mm',
-    gtin: '0401289196120',
-    category: 'Orthopedic Instruments',
-    subCategory: 'Bone Cutting & Gouging',
-    alloy: 'AISI 440C High-Carbon Stainless',
-    alloyFilter: 'high-carbon',
-    finishNote: 'Cryogenic Annealed, 58 HRC',
-    badge: 'HEAVY-DUTY',
-    dateAdded: 'Oct 18, 2024',
-    batchNo: 'Batch #864-E',
-    status: 'Draft Review',
-    imageUrl:
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuDsZP3dkaN0IN7-LqeZdfBUR6VzKWdLWRgEeZ0Yunio_keuoSmGGx9BnFluoa7oILUVugzL7CVAuUOnUVmxW3LsVgZHVHJXUIexVRy14FVDiGgNGijJ36djW1706ud1OkTTGSfvX1_FfFP2bZi2ZZTB0Rvi7Jmkou2QdXVBe8hPwY4r1TohCYlLrYT24MS0d49uI3d_Ywyij5_F3b6UFKSWkO7y_kuQD0J-dVyUaGg',
-    imageAlt: 'Beyer Bone Rongeur Double Action Orthopedic surgical tool',
-  },
-  {
-    id: 'prod-5',
-    name: 'Castroviejo Micro Caliper (0-20mm Screw)',
-    sku: 'BN-OPH-7011',
-    standardRef: 'Graduation: 0.5mm',
-    gtin: '0401289197011',
-    category: 'Ophthalmic Instruments',
-    subCategory: 'Micro Measurement',
-    alloy: 'Titanium Grade 5 (Ti-6Al-4V)',
-    alloyFilter: 'titanium',
-    finishNote: 'Anodized Non-Reflective Satin',
-    badge: 'TITANIUM',
-    dateAdded: 'Oct 15, 2024',
-    batchNo: 'Batch #859-T',
-    status: 'Published',
-    imageUrl:
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuCBDh6DoNV2ax5y9yYe-FmukwVwe5WBQfnmECJEZ8hT3Rt8z8dMoh20SpPmCpvPFT5sVk-g4yXQA4UNG4JLeCjKPnWu0NR-yKkNtcCzthRYhAkhG-rkqCCIjmtVFXQwSEE0PJAG6mqeSnwBIt25TBfdRIF9gbWYeFjJHuUB3XiiGKz2ph0WHSwjRhyHLUcYNGiOx3OlPTRhRwp5TAzgSEr1jEK_kA69xHtpjT1SLYU',
-    imageAlt: 'Castroviejo Micro Caliper surgical measuring device',
-  },
-];
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import { CatalogItem, VANGUARD_CATALOG } from "../../data/catalog";
 
 export const AdminProductsPage: React.FC = () => {
-  const [searchParams] = useSearchParams();
-  const { globalSearch } = useAdminContext();
-
-  const [products, setProducts] = useState<ProductRecord[]>(INITIAL_PRODUCTS);
-  const [localSearch, setLocalSearch] = useState(searchParams.get('q') || '');
-  const [categoryFilter, setCategoryFilter] = useState('all');
-  const [alloyFilter, setAlloyFilter] = useState('all');
-  const [statusFilter, setStatusFilter] = useState('all');
+  const [products, setProducts] = useState<CatalogItem[]>(VANGUARD_CATALOG);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("All");
+  const [statusFilter, setStatusFilter] = useState("All");
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  const effectiveSearch = globalSearch || localSearch;
+  // Drawer / Modal state for adding or editing
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<CatalogItem | null>(null);
 
-  const filteredProducts = useMemo(() => {
-    return products.filter((p) => {
-      if (effectiveSearch.trim()) {
-        const q = effectiveSearch.toLowerCase();
-        const match =
-          p.name.toLowerCase().includes(q) ||
-          p.sku.toLowerCase().includes(q) ||
-          p.gtin.toLowerCase().includes(q) ||
-          p.category.toLowerCase().includes(q) ||
-          p.alloy.toLowerCase().includes(q);
-        if (!match) return false;
-      }
+  // Form states
+  const [formName, setFormName] = useState("");
+  const [formSku, setFormSku] = useState("");
+  const [formDiscipline, setFormDiscipline] = useState("Scissors & Cutting");
+  const [formMaterial, setFormMaterial] = useState("DIN 1.4117 (Cryogenic)");
+  const [formFinish, setFormFinish] = useState("Electrolytic Satin Bead-Blast");
+  const [formLength, setFormLength] = useState('180 mm (7")');
+  const [formJaw, setFormJaw] = useState("Curved / Delicate");
+  const [formNorm, setFormNorm] = useState("DIN 58298 / ISO 7153-1");
+  const [formDesc, setFormDesc] = useState("");
 
-      if (categoryFilter !== 'all') {
-        if (!p.category.toLowerCase().includes(categoryFilter.toLowerCase())) {
-          return false;
-        }
-      }
+  const handleOpenDrawer = (item?: CatalogItem) => {
+    if (item) {
+      setEditingItem(item);
+      setFormName(item.name);
+      setFormSku(item.sku);
+      setFormDiscipline(item.discipline);
+      setFormMaterial(item.material);
+      setFormFinish(item.finish);
+      setFormLength(item.length);
+      setFormJaw(item.jawProfile);
+      setFormNorm(item.norm);
+      setFormDesc(item.description);
+    } else {
+      setEditingItem(null);
+      setFormName("");
+      setFormSku(`VSP-${Math.floor(1000 + Math.random() * 9000)}-TC`);
+      setFormDiscipline("General Surgery");
+      setFormMaterial("DIN 1.4117 Martensitic");
+      setFormFinish("Electrolytic Satin Bead-Blast");
+      setFormLength("180 mm");
+      setFormJaw("Straight / Delicate");
+      setFormNorm("DIN 58298");
+      setFormDesc("");
+    }
+    setDrawerOpen(true);
+  };
 
-      if (alloyFilter !== 'all') {
-        if (p.alloyFilter !== alloyFilter) {
-          return false;
-        }
-      }
+  const handleSaveProduct = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (editingItem) {
+      setProducts((prev) =>
+        prev.map((p) =>
+          p.id === editingItem.id
+            ? {
+                ...p,
+                name: formName,
+                sku: formSku,
+                discipline: formDiscipline,
+                material: formMaterial,
+                finish: formFinish,
+                length: formLength,
+                jawProfile: formJaw,
+                norm: formNorm,
+                description: formDesc,
+              }
+            : p
+        )
+      );
+    } else {
+      const newItem: CatalogItem = {
+        id: formSku,
+        sku: formSku,
+        name: formName,
+        discipline: formDiscipline,
+        material: formMaterial,
+        finish: formFinish,
+        length: formLength,
+        jawProfile: formJaw,
+        norm: formNorm,
+        description: formDesc,
+        image:
+          "https://lh3.googleusercontent.com/aida-public/AB6AXuDbcd9pqEG_GaGJuoGiwmwS5alcTw2eI6B1-oMC5-0CQIRsNNAl4mrbM-J4aCPiDGfqQ3AroDyIf-SPu6BDZKNFEElYndsh7Q9zQH66XeBMya9envsg5RmXVRvagoskfABvRhotwx4rC1WocXFqU3kQ8MOGxKBufa_4xdtQEWuCutmDFVb6Pga-u6R54UO0R4BPyRMAZQH0Mu9e6qcqYkIMt0EfDyT2aT8SYQGdJvo0",
+        imageAlt: formName,
+        tag: "New Catalog Release",
+      };
+      setProducts((prev) => [newItem, ...prev]);
+    }
+    setDrawerOpen(false);
+  };
 
-      if (statusFilter !== 'all') {
-        if (statusFilter === 'published' && p.status !== 'Published') return false;
-        if (statusFilter === 'draft' && p.status !== 'Draft Review') return false;
-      }
+  const handleDelete = (id: string, name: string) => {
+    if (confirm(`Decommission SKU ${name} from Swiss node active catalog?`)) {
+      setProducts((prev) => prev.filter((p) => p.id !== id));
+      setSelectedIds((prev) => prev.filter((i) => i !== id));
+    }
+  };
 
-      return true;
-    });
-  }, [products, effectiveSearch, categoryFilter, alloyFilter, statusFilter]);
-
-  const handleSelectAll = (checked: boolean) => {
+  const handleToggleSelectAll = (checked: boolean) => {
     if (checked) {
       setSelectedIds(filteredProducts.map((p) => p.id));
     } else {
@@ -177,502 +111,301 @@ export const AdminProductsPage: React.FC = () => {
 
   const handleToggleSelect = (id: string) => {
     setSelectedIds((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
     );
   };
 
-  const handleExportCsv = () => {
-    const header = 'ID,Name,SKU,GTIN,Category,Alloy,Status,Date\n';
-    const rows = filteredProducts
-      .map(
-        (p) =>
-          `"${p.id}","${p.name}","${p.sku}","${p.gtin}","${p.category}","${p.alloy}","${p.status}","${p.dateAdded}"`
-      )
-      .join('\n');
-    const blob = new Blob([header + rows], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `blueneedle_catalog_export_${Date.now()}.csv`;
-    link.click();
-    URL.revokeObjectURL(url);
-    setToastMessage(`Exported ${filteredProducts.length} products to CSV.`);
-    setTimeout(() => setToastMessage(null), 3000);
-  };
+  const filteredProducts = products.filter((prod) => {
+    const matchSearch =
+      !searchTerm.trim() ||
+      prod.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      prod.sku.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      prod.discipline.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      prod.material.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      prod.norm.toLowerCase().includes(searchTerm.toLowerCase());
 
-  const handleDeleteProduct = (id: string) => {
-    if (confirm('Quarantine / remove this instrument from active catalog?')) {
-      setProducts((prev) => prev.filter((p) => p.id !== id));
-      setSelectedIds((prev) => prev.filter((item) => item !== id));
-      setToastMessage('Instrument archived / quarantined successfully.');
-      setTimeout(() => setToastMessage(null), 3000);
-    }
-  };
+    const matchCategory =
+      categoryFilter === "All" || prod.discipline === categoryFilter;
+
+    return matchSearch && matchCategory;
+  });
 
   return (
-    <div className="flex flex-col w-full">
-      {/* Top Utility Contextual Sub-bar & Heading */}
-      <section className="w-full px-gutter py-space-xl bg-surface-container-lowest shadow-sm border-b border-surface-container-high">
-        <div className="w-full max-w-[1680px] mx-auto flex flex-col lg:flex-row lg:items-center justify-between gap-space-md">
-          {/* Title & Context */}
-          <div className="flex flex-col gap-1">
-            <div className="flex items-center gap-space-xs text-on-surface-variant font-caption text-caption">
-              <span className="hover:text-primary cursor-pointer transition-colors">
-                Catalog Architecture
+    <div className="w-full bg-surface min-h-[calc(100vh-4rem)]">
+      <div className="w-full px-space-md lg:px-space-lg py-space-md flex flex-col gap-space-lg">
+        {/* Page Title & Operational Stat Metrics */}
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-space-md">
+          <div className="flex flex-col gap-space-xs">
+            <div className="flex items-center gap-space-xs">
+              <span className="font-label-sm text-label-sm uppercase tracking-wider text-outline">
+                Master Catalog Directory
               </span>
-              <span className="material-symbols-outlined text-xs">chevron_right</span>
-              <span className="text-primary font-caption-bold">Regulatory Master Index</span>
-              <span className="ml-2 px-1.5 py-0.5 rounded text-[10px] tracking-wider uppercase bg-secondary-container text-on-secondary-fixed font-caption-bold">
-                ISO 13485:2016 Compliant
+              <span className="w-1 h-1 rounded-full bg-outline"></span>
+              <span className="font-label-sm text-label-sm text-outline font-mono">
+                DIN EN ISO 13485:2016 Compliant
               </span>
             </div>
-            <h1 className="font-headline-lg text-headline-lg text-primary tracking-tight">
+            <h1 className="font-headline-lg text-headline-lg tracking-tight text-primary font-semibold">
               Products Management
             </h1>
-            <p className="font-body-default text-body-default text-on-surface-variant max-w-3xl">
-              Manage, verify, and publish surgical, orthopedic, ophthalmic, and dental instrumentation across MDR 2017/745 certified repositories.
+            <p className="font-body-md text-body-md text-on-surface-variant max-w-3xl">
+              Manage precision surgical instrument catalog, technical CAD specifications, metallurgical certification alloys, and public tender procurement statuses.
             </p>
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex items-center gap-space-sm flex-wrap self-start lg:self-center">
-            <button
-              type="button"
-              onClick={handleExportCsv}
-              className="flex items-center gap-2 h-10 px-space-md rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface transition-colors font-button-text text-button-text shadow-sm border border-surface-container-high"
-            >
-              <span className="material-symbols-outlined text-lg">download</span>
-              <span>Export CSV / Spec Sheets</span>
-            </button>
-            <Link
-              to="/admin/products/new"
-              className="flex items-center gap-2 h-10 px-space-md rounded-lg bg-primary-container hover:bg-primary text-on-primary transition-all font-button-text text-button-text shadow-sm"
-            >
-              <span className="material-symbols-outlined text-lg">add_circle</span>
-              <span>+ Add New Product</span>
-            </Link>
-          </div>
-        </div>
-
-        {/* Quick Metrics Strip */}
-        <div className="max-w-[1680px] mx-auto grid grid-cols-2 lg:grid-cols-4 gap-space-md mt-space-xl">
-          {/* Metric 1 */}
-          <div className="bg-surface-container-low rounded-xl p-space-md flex items-center justify-between shadow-sm border border-surface-container-high">
-            <div className="flex flex-col">
-              <span className="font-caption text-caption text-on-surface-variant">
-                Total Instruments
-              </span>
-              <span className="font-headline-lg text-headline-lg text-primary mt-0.5 font-bold">
-                2,480
-              </span>
-              <span className="font-caption text-caption text-secondary flex items-center gap-1 mt-1">
-                <span className="material-symbols-outlined text-sm">inventory_2</span> Active SKUs
-              </span>
+          {/* Quick Global Metrics Chips */}
+          <div className="flex items-center gap-space-sm flex-wrap">
+            <div className="bg-surface-container-low px-space-md py-space-xs rounded-lg flex items-center gap-space-sm shadow-sm border border-outline-variant/20">
+              <span className="w-2.5 h-2.5 rounded-full bg-primary-container"></span>
+              <div className="flex flex-col">
+                <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider">
+                  Active Inventory
+                </span>
+                <span className="font-headline-sm text-headline-sm text-on-surface leading-tight font-semibold">
+                  1,814
+                </span>
+              </div>
             </div>
-            <div className="w-12 h-12 rounded-lg bg-surface-container-lowest flex items-center justify-center text-primary shadow-sm border border-surface-container-high">
-              <span className="material-symbols-outlined text-2xl">precision_manufacturing</span>
+            <div className="bg-surface-container-low px-space-md py-space-xs rounded-lg flex items-center gap-space-sm shadow-sm border border-outline-variant/20">
+              <span className="w-2.5 h-2.5 rounded-full bg-on-tertiary-container"></span>
+              <div className="flex flex-col">
+                <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider">
+                  Draft / Review
+                </span>
+                <span className="font-headline-sm text-headline-sm text-on-surface leading-tight font-semibold">
+                  28
+                </span>
+              </div>
             </div>
-          </div>
-
-          {/* Metric 2 */}
-          <div className="bg-surface-container-low rounded-xl p-space-md flex items-center justify-between shadow-sm border border-surface-container-high">
-            <div className="flex flex-col">
-              <span className="font-caption text-caption text-on-surface-variant">Published</span>
-              <span className="font-headline-lg text-headline-lg text-primary mt-0.5 font-bold">
-                2,394
-              </span>
-              <span className="font-caption text-caption text-secondary flex items-center gap-1 mt-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-secondary"></span> 96.5% Public Visibility
-              </span>
-            </div>
-            <div className="w-12 h-12 rounded-lg bg-surface-container-lowest flex items-center justify-center text-secondary shadow-sm border border-surface-container-high">
-              <span className="material-symbols-outlined text-2xl">verified</span>
-            </div>
-          </div>
-
-          {/* Metric 3 */}
-          <div className="bg-surface-container-low rounded-xl p-space-md flex items-center justify-between shadow-sm border border-surface-container-high">
-            <div className="flex flex-col">
-              <span className="font-caption text-caption text-on-surface-variant">Draft Review</span>
-              <span className="font-headline-lg text-headline-lg text-primary mt-0.5 font-bold">
-                86
-              </span>
-              <span className="font-caption text-caption text-on-tertiary-container flex items-center gap-1 mt-1">
-                <span className="material-symbols-outlined text-sm">pending_actions</span> QA Pending Signoff
-              </span>
-            </div>
-            <div className="w-12 h-12 rounded-lg bg-surface-container-lowest flex items-center justify-center text-on-tertiary-container shadow-sm border border-surface-container-high">
-              <span className="material-symbols-outlined text-2xl">fact_check</span>
-            </div>
-          </div>
-
-          {/* Metric 4 */}
-          <div className="bg-surface-container-low rounded-xl p-space-md flex items-center justify-between shadow-sm border border-surface-container-high">
-            <div className="flex flex-col">
-              <span className="font-caption text-caption text-on-surface-variant">
-                Tungsten Carbide (TC)
-              </span>
-              <span className="font-headline-lg text-headline-lg text-primary mt-0.5 font-bold">
-                642
-              </span>
-              <span className="font-caption text-caption text-on-secondary-container flex items-center gap-1 mt-1">
-                <span className="material-symbols-outlined text-sm">stars</span> Premium Gold Handle
-              </span>
-            </div>
-            <div className="w-12 h-12 rounded-lg bg-surface-container-lowest flex items-center justify-center text-primary-container shadow-sm border border-surface-container-high">
-              <span className="material-symbols-outlined text-2xl">handyman</span>
+            <div className="bg-surface-container-low px-space-md py-space-xs rounded-lg flex items-center gap-space-sm shadow-sm border border-outline-variant/20">
+              <span className="w-2.5 h-2.5 rounded-full bg-secondary"></span>
+              <div className="flex flex-col">
+                <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider">
+                  Total SKUs
+                </span>
+                <span className="font-headline-sm text-headline-sm text-on-surface leading-tight font-semibold">
+                  1,842
+                </span>
+              </div>
             </div>
           </div>
         </div>
-      </section>
 
-      {/* Main Work Area */}
-      <section className="w-full px-gutter py-space-xl flex flex-col gap-space-lg max-w-[1680px] mx-auto">
-        {toastMessage && (
-          <div className="p-3 rounded-lg bg-secondary-container text-on-secondary-fixed border border-secondary flex items-center justify-between">
-            <span className="text-sm font-semibold">{toastMessage}</span>
-            <button onClick={() => setToastMessage(null)} className="material-symbols-outlined text-sm">
-              close
-            </button>
-          </div>
-        )}
+        {/* Top Action Toolbar */}
+        <div className="bg-surface-container-lowest rounded-xl p-space-md shadow-sm border border-outline-variant/20 flex flex-col gap-space-md">
+          <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-space-md">
+            {/* Search & Dynamic Filters */}
+            <div className="flex flex-wrap items-center gap-space-sm flex-1">
+              {/* Search Bar */}
+              <div className="relative min-w-[280px] flex-1 max-w-md">
+                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px]">
+                  search
+                </span>
+                <input
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full bg-surface-container-low rounded-lg pl-10 pr-space-md py-space-xs font-body-sm text-body-sm text-on-surface placeholder:text-outline focus:outline-none focus:bg-surface-container-lowest transition-colors border border-outline-variant/20"
+                  placeholder="Search by instrument name, SKU, DIN standard, or alloy..."
+                  type="text"
+                />
+              </div>
 
-        {/* Filter & Search Toolbar */}
-        <div className="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col gap-space-md border border-surface-container-high">
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-space-sm items-center">
-            {/* Search Field */}
-            <div className="md:col-span-4 relative flex items-center">
-              <span className="material-symbols-outlined absolute left-3 text-on-surface-variant text-xl">
-                search
-              </span>
-              <input
-                className="w-full h-11 pl-10 pr-4 rounded-lg bg-surface-container-low text-on-surface placeholder:text-outline text-body-default font-body-default focus:bg-surface-container-lowest focus:outline-none focus:ring-1 focus:ring-primary-container transition-all border border-surface-container-high"
-                placeholder="Search by product name, SKU, or DIN code..."
-                type="text"
-                value={localSearch}
-                onChange={(e) => setLocalSearch(e.target.value)}
-              />
-            </div>
-
-            {/* Category Dropdown */}
-            <div className="md:col-span-3">
+              {/* Category Select */}
               <div className="relative">
                 <select
-                  aria-label="Filter by Category"
-                  className="w-full h-11 px-3.5 appearance-none rounded-lg bg-surface-container-low text-on-surface text-body-default font-body-default focus:bg-surface-container-lowest focus:outline-none focus:ring-1 focus:ring-primary-container transition-all cursor-pointer border border-surface-container-high"
                   value={categoryFilter}
                   onChange={(e) => setCategoryFilter(e.target.value)}
+                  className="bg-surface-container-low text-on-surface font-label-lg text-label-lg px-space-md py-space-xs pr-8 rounded-lg focus:outline-none cursor-pointer border border-outline-variant/20"
                 >
-                  <option value="all">All Categories (Global Index)</option>
-                  <option value="surgical">Surgical Instruments</option>
-                  <option value="needle">Needle Holders &amp; Suture</option>
-                  <option value="orthopedic">Orthopedic Instruments</option>
-                  <option value="ophthalmic">Ophthalmic &amp; Micro</option>
-                  <option value="dental">Dental &amp; Oral Surgery</option>
+                  <option value="All">All Categories</option>
+                  <option value="Scissors & Cutting">Scissors &amp; Cutting</option>
+                  <option value="Forceps & Clamps">Forceps &amp; Clamps</option>
+                  <option value="Needle Holders">Needle Holders</option>
+                  <option value="Retractors & Specula">Retractors &amp; Specula</option>
+                  <option value="Orthopedic Suite">Orthopedic Suite</option>
                 </select>
-                <span className="material-symbols-outlined absolute right-3 top-3 text-on-surface-variant pointer-events-none text-base">
-                  expand_more
-                </span>
               </div>
-            </div>
 
-            {/* Material / Alloy Dropdown */}
-            <div className="md:col-span-3">
+              {/* Status Select */}
               <div className="relative">
                 <select
-                  aria-label="Filter by Metallurgy"
-                  className="w-full h-11 px-3.5 appearance-none rounded-lg bg-surface-container-low text-on-surface text-body-default font-body-default focus:bg-surface-container-lowest focus:outline-none focus:ring-1 focus:ring-primary-container transition-all cursor-pointer border border-surface-container-high"
-                  value={alloyFilter}
-                  onChange={(e) => setAlloyFilter(e.target.value)}
-                >
-                  <option value="all">All Alloys &amp; Metallurgy</option>
-                  <option value="tc">AISI 420B + Tungsten Carbide (TC)</option>
-                  <option value="martensitic">AISI 420B Martensitic Satin</option>
-                  <option value="high-carbon">AISI 440C High-Carbon Stainless</option>
-                  <option value="titanium">Titanium Grade 5 (Ti-6Al-4V)</option>
-                </select>
-                <span className="material-symbols-outlined absolute right-3 top-3 text-on-surface-variant pointer-events-none text-base">
-                  expand_more
-                </span>
-              </div>
-            </div>
-
-            {/* Status Filter Dropdown */}
-            <div className="md:col-span-2">
-              <div className="relative">
-                <select
-                  aria-label="Filter by Status"
-                  className="w-full h-11 px-3.5 appearance-none rounded-lg bg-surface-container-low text-on-surface text-body-default font-body-default focus:bg-surface-container-lowest focus:outline-none focus:ring-1 focus:ring-primary-container transition-all cursor-pointer border border-surface-container-high"
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
+                  className="bg-surface-container-low text-on-surface font-label-lg text-label-lg px-space-md py-space-xs pr-8 rounded-lg focus:outline-none cursor-pointer border border-outline-variant/20"
                 >
-                  <option value="all">All Statuses</option>
-                  <option value="published">Published</option>
-                  <option value="draft">Draft Review</option>
+                  <option value="All">All Statuses</option>
+                  <option value="Active">Active (Validated)</option>
+                  <option value="Draft">Draft Protocol</option>
                 </select>
-                <span className="material-symbols-outlined absolute right-3 top-3 text-on-surface-variant pointer-events-none text-base">
-                  expand_more
-                </span>
               </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchTerm("");
+                  setCategoryFilter("All");
+                  setStatusFilter("All");
+                }}
+                className="p-space-xs rounded-lg hover:bg-surface-container text-outline hover:text-on-surface transition-colors"
+                title="Reset Filters"
+              >
+                <span className="material-symbols-outlined text-[20px]">filter_alt_off</span>
+              </button>
+            </div>
+
+            {/* Action CTAs */}
+            <div className="flex items-center gap-space-sm flex-shrink-0">
+              <button
+                type="button"
+                onClick={() => alert("Exporting Vanguard Master Catalog Ledger (.CSV / EDI format)...")}
+                className="flex items-center gap-space-xs px-space-md py-space-xs bg-surface-container hover:bg-surface-container-high rounded-lg text-on-surface font-label-lg text-label-lg transition-colors shadow-sm"
+              >
+                <span className="material-symbols-outlined text-[18px]">download_for_offline</span>
+                <span>Export Spec Ledger</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleOpenDrawer()}
+                className="flex items-center gap-space-xs px-space-md py-space-xs bg-primary-container hover:bg-primary text-on-primary rounded-lg font-label-lg text-label-lg transition-colors shadow-md font-semibold"
+              >
+                <span className="material-symbols-outlined text-[20px]">add</span>
+                <span>Add New Product</span>
+              </button>
             </div>
           </div>
 
-          {/* Active Filter Tags Bar */}
-          <div className="flex flex-wrap items-center justify-between gap-space-sm pt-space-xs">
-            <div className="flex flex-wrap items-center gap-space-xs">
-              <span className="font-caption text-caption text-on-surface-variant mr-1">
-                Active Criteria:
+          {/* Catalog Summary Bar */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-space-xs pt-space-xs px-space-xs text-outline border-t border-outline-variant/15">
+            <div className="flex items-center gap-space-xs font-label-sm text-label-sm">
+              <span className="material-symbols-outlined text-[16px] text-primary">data_check</span>
+              <span>
+                Showing <strong className="text-on-surface font-semibold">{filteredProducts.length}</strong> of{" "}
+                <strong className="text-on-surface font-semibold">1,842</strong> cataloged surgical instruments
               </span>
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-surface-container text-on-surface font-caption text-caption">
-                <span>
-                  Division: <strong>Human Surgical</strong>
-                </span>
-              </span>
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-secondary-container text-on-secondary-fixed font-caption text-caption">
-                <span>
-                  Passivation: <strong>ASTM A967</strong>
-                </span>
-              </span>
-              {(categoryFilter !== 'all' || alloyFilter !== 'all' || statusFilter !== 'all' || localSearch) && (
-                <button
-                  type="button"
-                  className="text-caption font-caption-bold text-secondary hover:text-primary transition-colors underline ml-2"
-                  onClick={() => {
-                    setCategoryFilter('all');
-                    setAlloyFilter('all');
-                    setStatusFilter('all');
-                    setLocalSearch('');
-                  }}
-                >
-                  Reset all filters
-                </button>
-              )}
+              <span className="hidden md:inline">|</span>
+              <span className="hidden md:inline text-primary-container font-semibold">1,814 Active</span>
+              <span className="hidden md:inline text-outline">·</span>
+              <span className="hidden md:inline text-on-tertiary-container font-semibold">28 Draft/Review</span>
             </div>
-
-            {/* Right Quick Toggles */}
-            <div className="flex items-center gap-space-md text-caption font-caption text-on-surface-variant">
-              <span className="flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-secondary"></span> Auto-sync Live
+            <div className="flex items-center gap-space-sm font-label-sm text-label-sm">
+              <span className="inline-flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-600"></span> Public Tender View
               </span>
-              <span className="text-caption">
-                Showing {filteredProducts.length} of {products.length} Products
-              </span>
+              <span>Batch Action ({selectedIds.length} selected)</span>
             </div>
           </div>
         </div>
 
-        {/* Bulk Action Bar */}
-        {selectedIds.length > 0 && (
-          <div className="bg-primary text-on-primary rounded-xl p-space-md flex items-center justify-between shadow-md">
-            <span className="font-body-strong font-bold">
-              {selectedIds.length} instrument{selectedIds.length > 1 ? 's' : ''} selected
-            </span>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => {
-                  setProducts((prev) =>
-                    prev.map((p) =>
-                      selectedIds.includes(p.id) ? { ...p, status: 'Published' } : p
-                    )
-                  );
-                  setSelectedIds([]);
-                  setToastMessage(`Published ${selectedIds.length} instruments.`);
-                }}
-                className="px-3 py-1.5 rounded-lg bg-surface-container-lowest text-primary text-xs font-bold hover:bg-surface-container-low transition-colors"
-              >
-                Mark as Published
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setProducts((prev) =>
-                    prev.map((p) =>
-                      selectedIds.includes(p.id) ? { ...p, status: 'Draft Review' } : p
-                    )
-                  );
-                  setSelectedIds([]);
-                  setToastMessage(`Moved ${selectedIds.length} instruments to Draft Review.`);
-                }}
-                className="px-3 py-1.5 rounded-lg bg-surface-container-lowest text-primary text-xs font-bold hover:bg-surface-container-low transition-colors"
-              >
-                Mark as Draft
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  if (confirm(`Remove ${selectedIds.length} instruments from active index?`)) {
-                    setProducts((prev) => prev.filter((p) => !selectedIds.includes(p.id)));
-                    setSelectedIds([]);
-                    setToastMessage('Selected instruments removed.');
-                  }
-                }}
-                className="px-3 py-1.5 rounded-lg bg-error text-on-error text-xs font-bold hover:opacity-90 transition-opacity"
-              >
-                Quarantine
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Master Enterprise Table Container */}
-        <div className="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden flex flex-col border border-surface-container-high">
-          <div className="w-full overflow-x-auto">
-            <table className="w-full text-left border-collapse min-w-[1020px]">
+        {/* Main Surgical Product Data Grid */}
+        <div className="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/20 overflow-hidden flex flex-col">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-surface-container-low text-on-surface-variant font-table-header text-table-header uppercase tracking-wider h-11 border-b border-surface-container-high">
-                  <th className="py-3 px-space-md w-16 text-center" scope="col">
+                <tr className="bg-surface-container-low text-outline font-label-md text-label-md uppercase tracking-wider select-none">
+                  <th className="py-space-sm pl-space-md pr-space-xs w-10">
                     <input
-                      aria-label="Select all products"
-                      className="rounded cursor-pointer w-4 h-4 accent-primary"
                       type="checkbox"
-                      checked={
-                        filteredProducts.length > 0 &&
-                        selectedIds.length === filteredProducts.length
-                      }
-                      onChange={(e) => handleSelectAll(e.target.checked)}
+                      className="w-4 h-4 rounded text-primary-container focus:ring-0 cursor-pointer accent-primary-container"
+                      checked={selectedIds.length > 0 && selectedIds.length === filteredProducts.length}
+                      onChange={(e) => handleToggleSelectAll(e.target.checked)}
                     />
                   </th>
-                  <th className="py-3 px-space-md w-24" scope="col">
-                    Tool Visual
-                  </th>
-                  <th className="py-3 px-space-md" scope="col">
-                    Product Designation &amp; Identifiers
-                  </th>
-                  <th className="py-3 px-space-md" scope="col">
-                    Category / Family
-                  </th>
-                  <th className="py-3 px-space-md" scope="col">
-                    Metallurgy &amp; Finish
-                  </th>
-                  <th className="py-3 px-space-md" scope="col">
-                    Regulatory Status
-                  </th>
-                  <th className="py-3 px-space-md" scope="col">
-                    Date Enrolled
-                  </th>
-                  <th className="py-3 px-space-md text-right w-36" scope="col">
-                    Operations
-                  </th>
+                  <th className="py-space-sm px-space-xs w-16">Profile</th>
+                  <th className="py-space-sm px-space-md min-w-[240px]">Instrument Name &amp; Description</th>
+                  <th className="py-space-sm px-space-md whitespace-nowrap">Product Code / DIN</th>
+                  <th className="py-space-sm px-space-md whitespace-nowrap">Category</th>
+                  <th className="py-space-sm px-space-md whitespace-nowrap">Metallurgy &amp; Finish</th>
+                  <th className="py-space-sm px-space-md whitespace-nowrap">Status</th>
+                  <th className="py-space-sm px-space-md whitespace-nowrap">Length</th>
+                  <th className="py-space-sm pr-space-md pl-space-xs text-right whitespace-nowrap">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-surface-container-high font-body-default text-body-default text-on-surface">
-                {filteredProducts.map((p) => {
-                  const isChecked = selectedIds.includes(p.id);
+              <tbody className="divide-y divide-surface-container-high font-body-sm text-body-sm text-on-surface">
+                {filteredProducts.map((prod) => {
+                  const isChecked = selectedIds.includes(prod.id);
                   return (
-                    <tr
-                      key={p.id}
-                      className="hover:bg-surface-container-low/60 transition-colors group"
-                    >
-                      <td className="py-3.5 px-space-md text-center">
+                    <tr key={prod.id} className="hover:bg-surface-container-low/60 transition-colors group">
+                      <td className="py-space-sm pl-space-md pr-space-xs">
                         <input
-                          aria-label={`Select ${p.name}`}
-                          className="rounded cursor-pointer w-4 h-4 accent-primary"
                           type="checkbox"
+                          className="w-4 h-4 rounded text-primary-container focus:ring-0 cursor-pointer accent-primary-container"
                           checked={isChecked}
-                          onChange={() => handleToggleSelect(p.id)}
+                          onChange={() => handleToggleSelect(prod.id)}
                         />
                       </td>
-                      <td className="py-3.5 px-space-md">
-                        <div className="w-14 h-14 rounded-lg bg-surface-container flex items-center justify-center p-1 overflow-hidden shadow-inner border border-surface-container-high">
+                      <td className="py-space-sm px-space-xs">
+                        <div className="w-12 h-12 rounded-lg bg-surface-container overflow-hidden flex items-center justify-center p-1 shadow-sm">
                           <img
-                            className="w-full h-full object-contain mix-blend-multiply group-hover:scale-105 transition-transform duration-200"
-                            src={p.imageUrl}
-                            alt={p.imageAlt}
+                            className="w-full h-full object-contain"
+                            alt={prod.imageAlt}
+                            src={prod.image}
                           />
                         </div>
                       </td>
-                      <td className="py-3.5 px-space-md">
-                        <div className="flex flex-col">
-                          <div className="flex items-center gap-2">
-                            <Link
-                              to={`/admin/products/${p.id}/edit`}
-                              className="font-body-strong text-body-strong text-primary hover:text-secondary cursor-pointer transition-colors"
-                            >
-                              {p.name}
-                            </Link>
-                            {p.badge && (
-                              <span className="px-1.5 py-0.5 rounded text-[10px] font-caption-bold bg-tertiary-fixed text-on-tertiary-fixed">
-                                {p.badge}
+                      <td className="py-space-sm px-space-md">
+                        <div className="flex flex-col min-w-0">
+                          <div className="flex items-center gap-space-xs">
+                            <span className="font-label-lg text-label-lg font-semibold text-primary truncate">
+                              {prod.name}
+                            </span>
+                            {prod.tag && (
+                              <span className="font-label-sm text-label-sm px-1.5 py-0.5 rounded bg-primary-fixed text-primary uppercase tracking-wider font-semibold">
+                                {prod.tag}
                               </span>
                             )}
                           </div>
-                          <div className="flex items-center gap-space-sm mt-0.5 font-caption text-caption text-on-surface-variant font-mono">
-                            <span>SKU: {p.sku}</span>
-                            <span className="text-outline-variant">•</span>
-                            <span>{p.standardRef}</span>
-                            <span className="text-outline-variant">•</span>
-                            <span>GTIN: {p.gtin}</span>
-                          </div>
+                          <span className="text-on-surface-variant text-body-sm truncate max-w-sm">
+                            {prod.description}
+                          </span>
                         </div>
                       </td>
-                      <td className="py-3.5 px-space-md">
+                      <td className="py-space-sm px-space-md font-mono text-[12px] whitespace-nowrap">
                         <div className="flex flex-col">
-                          <span className="font-caption-bold text-caption-bold text-on-surface">
-                            {p.category}
-                          </span>
-                          <span className="font-caption text-caption text-on-surface-variant">
-                            {p.subCategory}
-                          </span>
+                          <span className="font-semibold text-primary">{prod.sku}</span>
+                          <span className="text-outline text-label-sm font-sans">{prod.norm}</span>
                         </div>
                       </td>
-                      <td className="py-3.5 px-space-md">
+                      <td className="py-space-sm px-space-md whitespace-nowrap">
+                        <span className="font-label-md text-label-md px-2.5 py-1 rounded-full bg-surface-container-high text-on-surface font-medium">
+                          {prod.discipline}
+                        </span>
+                      </td>
+                      <td className="py-space-sm px-space-md whitespace-nowrap">
                         <div className="flex flex-col">
-                          <span className="font-caption-bold text-caption-bold text-primary">
-                            {p.alloy}
+                          <span className="font-label-md text-label-md font-medium text-on-surface">
+                            {prod.material}
                           </span>
-                          <span className="font-caption text-caption text-on-surface-variant">
-                            {p.finishNote}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="py-3.5 px-space-md">
-                        {p.status === 'Published' ? (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-secondary-container text-on-secondary-fixed text-caption-bold font-caption-bold">
-                            <span className="w-1.5 h-1.5 rounded-full bg-secondary"></span>
-                            Published
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-tertiary-fixed text-on-tertiary-fixed border border-tertiary-fixed-dim text-caption-bold font-caption-bold">
-                            Draft Review
-                          </span>
-                        )}
-                      </td>
-                      <td className="py-3.5 px-space-md">
-                        <div className="flex flex-col">
-                          <span className="text-caption font-caption text-on-surface">
-                            {p.dateAdded}
-                          </span>
-                          <span className="text-[11px] font-caption text-on-surface-variant">
-                            {p.batchNo}
+                          <span className="font-label-sm text-label-sm text-outline">
+                            {prod.finish}
                           </span>
                         </div>
                       </td>
-                      <td className="py-3.5 px-space-md text-right">
+                      <td className="py-space-sm px-space-md whitespace-nowrap">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full font-label-sm text-label-sm bg-primary-fixed text-primary font-semibold">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                          Active
+                        </span>
+                      </td>
+                      <td className="py-space-sm px-space-md whitespace-nowrap text-outline font-mono text-xs">
+                        {prod.length}
+                      </td>
+                      <td className="py-space-sm pr-space-md pl-space-xs text-right whitespace-nowrap">
                         <div className="inline-flex items-center gap-1">
-                          <Link
-                            to={`/admin/email?subject=Quotation: ${encodeURIComponent(p.name)} [SKU: ${p.sku}]`}
-                            className="p-1.5 rounded hover:bg-surface-container text-on-surface-variant hover:text-primary transition-colors"
-                            title="Compose Quote Email"
-                          >
-                            <span className="material-symbols-outlined text-lg">
-                              outgoing_mail
-                            </span>
-                          </Link>
-                          <Link
-                            to={`/admin/products/${p.id}/edit`}
-                            className="p-1.5 rounded hover:bg-surface-container text-on-surface-variant hover:text-primary transition-colors"
-                            title="Edit Catalog Properties"
-                          >
-                            <span className="material-symbols-outlined text-lg">edit</span>
-                          </Link>
                           <button
                             type="button"
-                            onClick={() => handleDeleteProduct(p.id)}
-                            className="p-1.5 rounded hover:bg-surface-container text-on-surface-variant hover:text-error transition-colors"
-                            title="Archive / Quarantine"
+                            onClick={() => handleOpenDrawer(prod)}
+                            className="p-1 rounded hover:bg-surface-container text-on-surface-variant hover:text-primary transition-colors"
+                            title="Edit Catalog Entry"
                           >
-                            <span className="material-symbols-outlined text-lg">delete</span>
+                            <span className="material-symbols-outlined text-[18px]">edit_square</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDelete(prod.id, prod.name)}
+                            className="p-1 rounded hover:bg-error-container text-outline hover:text-error transition-colors"
+                            title="Decommission SKU"
+                          >
+                            <span className="material-symbols-outlined text-[18px]">delete</span>
                           </button>
                         </div>
                       </td>
@@ -683,31 +416,152 @@ export const AdminProductsPage: React.FC = () => {
             </table>
           </div>
 
-          {/* Table Footer Pagination */}
-          <div className="px-space-md py-3 bg-surface-container-low border-t border-surface-container-high flex items-center justify-between text-caption text-secondary">
-            <span>Showing {filteredProducts.length} of {products.length} Active Records</span>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                className="px-2.5 py-1 rounded bg-surface-container-lowest border border-surface-container-high text-xs font-semibold hover:bg-surface-container"
-              >
-                Previous
-              </button>
-              <span className="px-2 py-1 rounded bg-primary text-on-primary text-xs font-bold">
-                1
-              </span>
-              <button
-                type="button"
-                className="px-2.5 py-1 rounded bg-surface-container-lowest border border-surface-container-high text-xs font-semibold hover:bg-surface-container"
-              >
-                Next
-              </button>
-            </div>
+          <div className="flex items-center justify-between p-4 bg-surface-container-low border-t border-outline-variant/20">
+            <span className="text-xs text-outline font-mono">
+              Page 1 of 1 • {filteredProducts.length} Surgical Entries Listed
+            </span>
+            <Link
+              to="/products"
+              target="_blank"
+              className="text-xs font-semibold text-primary hover:underline flex items-center gap-1"
+            >
+              Preview Public Catalog <span className="material-symbols-outlined text-sm">open_in_new</span>
+            </Link>
           </div>
         </div>
-      </section>
+      </div>
+
+      {/* Add / Edit Drawer Modal */}
+      {drawerOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-surface-container-lowest max-w-2xl w-full rounded-xl shadow-2xl p-6 border border-outline-variant/30">
+            <div className="flex items-center justify-between pb-3 border-b border-outline-variant/20 mb-4">
+              <div>
+                <span className="font-label-sm text-label-sm uppercase tracking-wider text-outline">
+                  {editingItem ? "Update Specification" : "Instrument Master Creation"}
+                </span>
+                <h3 className="font-headline-sm text-headline-sm font-semibold text-primary">
+                  {editingItem ? `Edit SKU: ${editingItem.sku}` : "Catalog Instrument Registration"}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setDrawerOpen(false)}
+                className="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-outline hover:text-primary"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveProduct} className="space-y-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-outline uppercase mb-1">
+                    Instrument Master Name *
+                  </label>
+                  <input
+                    required
+                    value={formName}
+                    onChange={(e) => setFormName(e.target.value)}
+                    className="w-full bg-surface-container-low p-2 rounded text-sm outline-none border border-outline-variant/30 focus:border-primary-container"
+                    placeholder="e.g. Crile-Wood Needle Holder"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-outline uppercase mb-1">
+                    SKU Code *
+                  </label>
+                  <input
+                    required
+                    value={formSku}
+                    onChange={(e) => setFormSku(e.target.value)}
+                    className="w-full bg-surface-container-low p-2 rounded text-sm outline-none font-mono border border-outline-variant/30 focus:border-primary-container"
+                    placeholder="VSP-XXXX-TC"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-outline uppercase mb-1">
+                    Discipline
+                  </label>
+                  <select
+                    value={formDiscipline}
+                    onChange={(e) => setFormDiscipline(e.target.value)}
+                    className="w-full bg-surface-container-low p-2 rounded text-sm outline-none border border-outline-variant/30"
+                  >
+                    <option>Scissors & Cutting</option>
+                    <option>Forceps & Clamps</option>
+                    <option>Needle Holders</option>
+                    <option>Retractors & Specula</option>
+                    <option>Orthopedic Suite</option>
+                    <option>Diagnostic & Micro</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-outline uppercase mb-1">
+                    Metallurgy Grade
+                  </label>
+                  <input
+                    value={formMaterial}
+                    onChange={(e) => setFormMaterial(e.target.value)}
+                    className="w-full bg-surface-container-low p-2 rounded text-sm outline-none border border-outline-variant/30"
+                    placeholder="DIN 1.4117 Martensitic"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-outline uppercase mb-1">
+                    Working Length
+                  </label>
+                  <input
+                    value={formLength}
+                    onChange={(e) => setFormLength(e.target.value)}
+                    className="w-full bg-surface-container-low p-2 rounded text-sm outline-none border border-outline-variant/30"
+                    placeholder='180 mm (7")'
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-outline uppercase mb-1">
+                    DIN Norm
+                  </label>
+                  <input
+                    value={formNorm}
+                    onChange={(e) => setFormNorm(e.target.value)}
+                    className="w-full bg-surface-container-low p-2 rounded text-sm outline-none border border-outline-variant/30"
+                    placeholder="DIN 58298 / ISO 7153-1"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-outline uppercase mb-1">
+                  Clinical Specification &amp; Dimensions
+                </label>
+                <textarea
+                  value={formDesc}
+                  onChange={(e) => setFormDesc(e.target.value)}
+                  className="w-full bg-surface-container-low p-2 rounded text-sm outline-none border border-outline-variant/30 h-20"
+                  placeholder="Detail blade profile, box lock hinge, UDI laser marking requirements..."
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-outline-variant/20">
+                <button
+                  type="button"
+                  onClick={() => setDrawerOpen(false)}
+                  className="px-4 py-2 rounded-lg bg-surface-container text-primary font-semibold text-sm hover:bg-surface-container-high"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-lg bg-primary-container text-on-primary font-semibold text-sm hover:brightness-110"
+                >
+                  {editingItem ? "Update Instrument Record" : "Commit to Swiss Node Catalog"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
-
-export default AdminProductsPage;

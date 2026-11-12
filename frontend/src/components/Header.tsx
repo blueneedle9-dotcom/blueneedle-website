@@ -16,6 +16,7 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({ onOpenRfq, manifestCount }) => {
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(
     () => getStoredAuth()?.user || null
   );
@@ -34,329 +35,233 @@ export const Header: React.FC<HeaderProps> = ({ onOpenRfq, manifestCount }) => {
 
   const handleLogout = () => {
     clearAuth();
+    setUserDropdownOpen(false);
     setMobileMenuOpen(false);
     navigate("/login");
   };
 
   const navLinkClass = ({ isActive }: { isActive: boolean }) =>
     isActive
-      ? "transition-colors py-space-sm text-primary font-bold font-label-lg text-label-lg"
-      : "font-label-lg text-label-lg text-on-surface-variant hover:text-on-surface transition-colors py-space-sm";
+      ? "px-space-sm py-space-xs transition-colors bg-surface-container text-primary font-semibold rounded-lg font-label-lg text-label-lg"
+      : "px-space-sm py-space-xs font-label-lg text-label-lg text-on-surface-variant hover:text-on-surface transition-colors";
 
   return (
-    <header className="fixed top-0 w-full z-50 bg-surface-container-lowest/95 backdrop-blur-md shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
-      {/* Top Utility Bar */}
-      <div className="bg-primary-container text-on-primary py-space-xs">
-        <div className="w-full px-gutter-desktop max-w-[1440px] mx-auto flex flex-col md:flex-row justify-between items-center gap-space-xs text-label-technical font-label-technical">
-          <div className="flex items-center gap-space-sm">
-            <span className="material-symbols-outlined text-[14px] text-primary-fixed">
-              precision_manufacturing
-            </span>
-            <span>
-              Sialkot, Pakistan • Global Medical Device Manufacturing &amp; Export
-            </span>
-          </div>
-          <div className="flex items-center gap-space-md">
-            <a
-              className="hover:text-primary-fixed transition-colors flex items-center gap-1"
-              href="mailto:info@blueneedle.com"
-            >
-              <span className="material-symbols-outlined text-[14px]">mail</span>
-              info@blueneedle.com
-            </a>
-            <span className="text-on-primary-container">|</span>
-            <a
-              className="hover:text-primary-fixed transition-colors flex items-center gap-1"
-              href="tel:+92524589201"
-            >
-              <span className="material-symbols-outlined text-[14px]">call</span>
-              +92 52 4589201
-            </a>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Header Bar */}
-      <div className="h-20 w-full px-margin md:px-gutter-desktop max-w-[1440px] mx-auto flex items-center justify-between">
-        <Link className="flex items-center gap-space-md" to="/">
+    <header className="fixed top-0 left-0 right-0 w-full z-50 bg-surface-container-lowest/95 backdrop-blur-md border-b border-[#E5E8E5] transition-colors">
+      <div className="max-w-[1440px] mx-auto px-gutter-mobile lg:px-margin h-20 flex items-center justify-between">
+        {/* Brand Logo & Name */}
+        <Link to="/" className="flex items-center gap-space-md group">
           <img
-            alt="BLUENEEDLE Logo"
-            className="h-8 w-auto object-contain"
+            alt="Vanguard Surgical Instruments Logo"
+            className="h-8 w-auto object-contain transition-transform group-hover:scale-105"
             src={LOGO_URL}
           />
           <div className="flex flex-col">
-            <span className="font-headline-sm text-headline-sm uppercase tracking-tight text-primary">
-              BLUENEEDLE
+            <span className="font-headline-sm text-headline-sm uppercase tracking-tight text-primary leading-none font-semibold">
+              Vanguard Surgical
             </span>
-            <span className="font-label-code text-label-code uppercase tracking-widest text-secondary">
-              Surgical Instruments
+            <span className="font-label-sm text-label-sm uppercase tracking-widest text-outline mt-0.5">
+              Precision Instrumentation
             </span>
           </div>
         </Link>
 
-        {/* Desktop Nav */}
-        <nav className="hidden lg:flex items-center gap-space-lg">
-          <NavLink className={navLinkClass} end to="/">
+        {/* Desktop Navigation Links */}
+        <nav className="hidden xl:flex items-center gap-space-lg">
+          <NavLink to="/" end className={navLinkClass}>
             Home
           </NavLink>
-
-          <div className="group relative py-space-sm">
-            <NavLink
-              className={({ isActive }) =>
-                `${
-                  isActive
-                    ? "text-primary font-bold"
-                    : "text-on-surface-variant hover:text-on-surface"
-                } font-label-lg text-label-lg transition-colors flex items-center gap-1`
-              }
-              to="/products"
-            >
-              <span>Products</span>
-              <span className="material-symbols-outlined text-[16px]">
-                expand_more
-              </span>
-            </NavLink>
-
-            {/* Mega Menu Dropdown */}
-            <div className="absolute top-full left-1/2 -translate-x-1/2 w-[620px] bg-surface-container-lowest p-space-lg rounded-xl shadow-[0_20px_40px_-8px_rgba(20,43,69,0.16)] opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-all duration-200 mt-2 z-50">
-              <div className="flex items-center justify-between pb-space-sm mb-space-sm bg-surface-container-low px-space-sm py-space-xs rounded-lg">
-                <span className="font-label-technical text-label-technical uppercase tracking-wider text-secondary">
-                  DIN/ISO Medical Standards
-                </span>
-                <span className="font-label-technical text-label-technical text-on-surface-variant">
-                  Surgical Grade Martensitic Steel
-                </span>
-              </div>
-              <div className="grid grid-cols-2 gap-space-sm">
-                <Link
-                  className="p-space-sm rounded-lg hover:bg-surface-container-low hover:text-on-surface transition-colors block"
-                  to="/products?category=Surgical+Instruments"
-                >
-                  <div className="font-label-lg text-label-lg text-primary">
-                    Surgical Instruments
-                  </div>
-                  <div className="font-body-sm text-body-sm text-on-surface-variant">
-                    General surgery, clamps &amp; retractors
-                  </div>
-                </Link>
-                <Link
-                  className="p-space-sm rounded-lg hover:bg-surface-container-low hover:text-on-surface transition-colors block"
-                  to="/products?category=Dental+Instruments"
-                >
-                  <div className="font-label-lg text-label-lg text-primary">
-                    Dental Instruments
-                  </div>
-                  <div className="font-body-sm text-body-sm text-on-surface-variant">
-                    Periodontal, extraction &amp; probe sets
-                  </div>
-                </Link>
-                <Link
-                  className="p-space-sm rounded-lg hover:bg-surface-container-low hover:text-on-surface transition-colors block"
-                  to="/products?category=Orthopedic+Instruments"
-                >
-                  <div className="font-label-lg text-label-lg text-primary">
-                    Orthopedic
-                  </div>
-                  <div className="font-body-sm text-body-sm text-on-surface-variant">
-                    Rongeurs, bone cutters &amp; osteotomes
-                  </div>
-                </Link>
-                <Link
-                  className="p-space-sm rounded-lg hover:bg-surface-container-low hover:text-on-surface transition-colors block"
-                  to="/products?category=Ophthalmic+Instruments"
-                >
-                  <div className="font-label-lg text-label-lg text-primary">
-                    Ophthalmic
-                  </div>
-                  <div className="font-body-sm text-body-sm text-on-surface-variant">
-                    Microsurgical forceps &amp; speculums
-                  </div>
-                </Link>
-                <Link
-                  className="p-space-sm rounded-lg hover:bg-surface-container-low hover:text-on-surface transition-colors block"
-                  to="/products?category=Scissors+%26+Shears"
-                >
-                  <div className="font-label-lg text-label-lg text-primary">
-                    Scissors &amp; Forceps
-                  </div>
-                  <div className="font-body-sm text-body-sm text-on-surface-variant">
-                    Tungsten carbide inserts &amp; SuperCut
-                  </div>
-                </Link>
-                <Link
-                  className="p-space-sm rounded-lg hover:bg-surface-container-low hover:text-on-surface transition-colors block"
-                  to="/products?category=Needle+Holders"
-                >
-                  <div className="font-label-lg text-label-lg text-primary">
-                    Needle Holders
-                  </div>
-                  <div className="font-body-sm text-body-sm text-on-surface-variant">
-                    Castroviejo, Mayo-Hegar &amp; Mathieu
-                  </div>
-                </Link>
-              </div>
-            </div>
-          </div>
-
-          <NavLink className={navLinkClass} to="/about-us">
+          <NavLink to="/about-us" className={navLinkClass}>
             About Us
           </NavLink>
-          <button
-            className="font-label-lg text-label-lg text-on-surface-variant hover:text-on-surface transition-colors py-space-sm"
-            onClick={() => onOpenRfq("General B2B Contact & Export Inquiry")}
-            type="button"
+          <NavLink to="/products" className={navLinkClass}>
+            Products
+          </NavLink>
+          <a
+            href="/#manufacturing"
+            className="px-space-sm py-space-xs font-label-lg text-label-lg text-on-surface-variant hover:text-on-surface transition-colors"
           >
-            Contact
-          </button>
+            Manufacturing
+          </a>
+          <a
+            href="/#quality-assurance"
+            className="px-space-sm py-space-xs font-label-lg text-label-lg text-on-surface-variant hover:text-on-surface transition-colors"
+          >
+            Quality Assurance
+          </a>
+          <a
+            href="/#inquiry-section"
+            className="px-space-sm py-space-xs font-label-lg text-label-lg text-on-surface-variant hover:text-on-surface transition-colors"
+          >
+            Contact Us
+          </a>
         </nav>
 
-        {/* Right Actions */}
-        <div className="flex items-center gap-space-sm md:gap-space-md">
-          {currentUser ? (
-            <>
-              {currentUser.role === "admin" && (
-                <Link
-                  className="hidden sm:inline-flex items-center gap-1 font-label-lg text-label-lg text-secondary hover:text-primary transition-colors px-space-sm py-space-xs"
-                  to="/admin"
-                >
-                  <span className="material-symbols-outlined text-[16px]">
-                    admin_panel_settings
-                  </span>
-                  Admin
-                </Link>
-              )}
-              <span
-                className="hidden xl:inline-block font-label-technical text-label-technical text-on-surface-variant px-space-xs"
-                title={currentUser.email}
-              >
-                {currentUser.fullName}
-              </span>
-              <button
-                className="hidden sm:inline-block font-label-lg text-label-lg text-on-surface-variant hover:text-on-surface transition-colors px-space-sm py-space-xs"
-                onClick={handleLogout}
-                type="button"
-              >
-                Sign Out
-              </button>
-            </>
-          ) : (
-            <>
-              <Link
-                className="hidden sm:inline-block font-label-lg text-label-lg text-on-surface-variant hover:text-on-surface transition-colors px-space-sm py-space-xs"
-                to="/login"
-              >
-                Login
-              </Link>
-              <Link
-                className="hidden xl:inline-block font-label-lg text-label-lg text-on-surface-variant hover:text-on-surface transition-colors px-space-sm py-space-xs"
-                to="/create-account"
-              >
-                Create Account
-              </Link>
-            </>
-          )}
+        {/* Header Right Actions */}
+        <div className="flex items-center gap-space-md">
+          {/* RFQ Quote Button */}
           <button
-            className="relative bg-primary-container text-on-primary hover:bg-primary transition-colors font-label-lg text-label-lg px-space-md py-space-sm rounded-lg tracking-wide uppercase shadow-[0_4px_12px_-2px_rgba(20,43,69,0.06)]"
-            onClick={() => onOpenRfq()}
             type="button"
+            onClick={() => onOpenRfq()}
+            className="hidden sm:inline-flex items-center justify-center gap-1.5 bg-primary-container text-on-primary font-label-lg text-label-lg px-space-lg py-space-sm rounded-lg hover:brightness-110 active:brightness-95 transition-all shadow-sm"
           >
-            Request an Inquiry
+            <span>Request a Quote</span>
             {manifestCount > 0 && (
-              <span className="ml-2 inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-label-code bg-tertiary-fixed text-primary rounded-full">
+              <span className="w-5 h-5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed text-xs font-bold flex items-center justify-center ml-1">
                 {manifestCount}
               </span>
             )}
           </button>
-          <Link
-            className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-on-primary hover:bg-primary-container transition-colors shrink-0"
-            title="Hospital Portal / Account Access"
-            to="/login"
-          >
-            <span className="material-symbols-outlined text-on-primary text-[18px]">
-              person
-            </span>
-          </Link>
+
+          {/* User Account / Admin Menu */}
+          <div className="relative">
+            {currentUser ? (
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setUserDropdownOpen((prev) => !prev)}
+                  className="w-9 h-9 rounded-full bg-primary text-on-primary flex items-center justify-center hover:opacity-90 transition-opacity font-semibold text-sm"
+                  title={currentUser.email}
+                >
+                  {currentUser.fullName
+                    ? currentUser.fullName.charAt(0).toUpperCase()
+                    : currentUser.email.charAt(0).toUpperCase()}
+                </button>
+                {userDropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-56 bg-surface-container-lowest rounded-xl shadow-xl border border-outline-variant/30 py-2 z-50">
+                    <div className="px-4 py-2 border-b border-outline-variant/20">
+                      <p className="font-label-md text-label-md font-semibold text-primary truncate">
+                        {currentUser.fullName || currentUser.email}
+                      </p>
+                      <p className="font-label-sm text-label-sm text-outline truncate">
+                        {currentUser.email}
+                      </p>
+                      <span className="inline-block mt-1 font-label-sm text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-primary-fixed text-primary">
+                        {currentUser.role}
+                      </span>
+                    </div>
+
+                    {currentUser.role === "admin" && (
+                      <Link
+                        to="/admin"
+                        onClick={() => setUserDropdownOpen(false)}
+                        className="flex items-center gap-2 px-4 py-2.5 text-on-surface hover:bg-surface-container font-label-md text-label-md transition-colors"
+                      >
+                        <span className="material-symbols-outlined text-[18px] text-primary">
+                          admin_panel_settings
+                        </span>
+                        Admin Operations Portal
+                      </Link>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={handleLogout}
+                      className="w-full text-left flex items-center gap-2 px-4 py-2.5 text-error hover:bg-error-container/20 font-label-md text-label-md transition-colors"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">
+                        logout
+                      </span>
+                      Sign Out
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <Link
+                to="/login"
+                className="w-9 h-9 rounded-full bg-primary flex items-center justify-center shrink-0 hover:brightness-110 transition-all text-on-primary"
+                title="Client & Staff Portal Login"
+              >
+                <span className="material-symbols-outlined text-[18px]">
+                  person
+                </span>
+              </Link>
+            )}
+          </div>
+
+          {/* Mobile Menu Button */}
           <button
-            aria-label="Toggle Menu"
-            className="lg:hidden p-1.5 rounded bg-surface-container text-primary"
-            onClick={() => setMobileMenuOpen((v) => !v)}
             type="button"
+            onClick={() => setMobileMenuOpen((prev) => !prev)}
+            className="xl:hidden p-2 rounded-lg text-primary hover:bg-surface-container transition-colors"
+            aria-label="Toggle Navigation Menu"
           >
-            <span className="material-symbols-outlined text-[22px]">
+            <span className="material-symbols-outlined text-[24px]">
               {mobileMenuOpen ? "close" : "menu"}
             </span>
           </button>
         </div>
       </div>
 
-      {/* Mobile Menu Drawer */}
+      {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="lg:hidden bg-surface-container-lowest border-t border-surface-container px-margin py-space-md flex flex-col gap-space-xs shadow-lg">
-          <Link
-            className="py-2 font-label-lg text-primary"
-            onClick={() => setMobileMenuOpen(false)}
-            to="/"
-          >
-            Home
-          </Link>
-          <Link
-            className="py-2 font-label-lg text-primary"
-            onClick={() => setMobileMenuOpen(false)}
-            to="/products"
-          >
-            Products Catalogue
-          </Link>
-          <Link
-            className="py-2 font-label-lg text-primary"
-            onClick={() => setMobileMenuOpen(false)}
-            to="/products/BN-SC-1021-TC"
-          >
-            Mayo Dissecting Scissors (Detail)
-          </Link>
-          <Link
-            className="py-2 font-label-lg text-primary"
-            onClick={() => setMobileMenuOpen(false)}
-            to="/about-us"
-          >
-            About Us
-          </Link>
-          {currentUser ? (
-            <>
-              {currentUser.role === "admin" && (
+        <div className="xl:hidden bg-surface-container-lowest border-b border-outline-variant/30 px-gutter-mobile py-space-md shadow-lg animate-fadeIn">
+          <nav className="flex flex-col gap-space-xs font-label-lg text-label-lg">
+            <Link
+              to="/"
+              onClick={() => setMobileMenuOpen(false)}
+              className="py-2 px-3 rounded hover:bg-surface-container text-on-surface"
+            >
+              Home
+            </Link>
+            <Link
+              to="/about-us"
+              onClick={() => setMobileMenuOpen(false)}
+              className="py-2 px-3 rounded hover:bg-surface-container text-on-surface"
+            >
+              About Us
+            </Link>
+            <Link
+              to="/products"
+              onClick={() => setMobileMenuOpen(false)}
+              className="py-2 px-3 rounded hover:bg-surface-container text-on-surface"
+            >
+              Products Catalog
+            </Link>
+            <a
+              href="/#manufacturing"
+              onClick={() => setMobileMenuOpen(false)}
+              className="py-2 px-3 rounded hover:bg-surface-container text-on-surface"
+            >
+              Manufacturing
+            </a>
+            <a
+              href="/#quality-assurance"
+              onClick={() => setMobileMenuOpen(false)}
+              className="py-2 px-3 rounded hover:bg-surface-container text-on-surface"
+            >
+              Quality Assurance
+            </a>
+            <a
+              href="/#inquiry-section"
+              onClick={() => setMobileMenuOpen(false)}
+              className="py-2 px-3 rounded hover:bg-surface-container text-on-surface"
+            >
+              Contact Us
+            </a>
+
+            <div className="pt-space-sm border-t border-outline-variant/20 flex flex-col gap-space-sm mt-space-xs">
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  onOpenRfq();
+                }}
+                className="w-full py-2.5 rounded-lg bg-primary-container text-on-primary font-semibold text-center"
+              >
+                Request a Quote ({manifestCount})
+              </button>
+              {currentUser?.role === "admin" && (
                 <Link
-                  className="py-2 font-label-lg text-secondary"
-                  onClick={() => setMobileMenuOpen(false)}
                   to="/admin"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="w-full py-2 rounded-lg bg-surface-container text-primary font-semibold text-center"
                 >
-                  Operations Admin Console
+                  Go to Admin Portal
                 </Link>
               )}
-              <button
-                className="py-2 font-label-lg text-primary text-left"
-                onClick={handleLogout}
-                type="button"
-              >
-                Sign Out ({currentUser.fullName})
-              </button>
-            </>
-          ) : (
-            <>
-              <Link
-                className="py-2 font-label-lg text-primary"
-                onClick={() => setMobileMenuOpen(false)}
-                to="/login"
-              >
-                Login
-              </Link>
-              <Link
-                className="py-2 font-label-lg text-primary"
-                onClick={() => setMobileMenuOpen(false)}
-                to="/create-account"
-              >
-                Create Account
-              </Link>
-            </>
-          )}
+            </div>
+          </nav>
         </div>
       )}
     </header>
