@@ -27,13 +27,21 @@ export const CataloguePage: React.FC<CataloguePageProps> = ({
   const [activeAngleTab, setActiveAngleTab] = useState<string>("Full Profile");
   const [specModalItem, setSpecModalItem] = useState<CatalogItem | null>(null);
 
+  React.useEffect(() => {
+    const qDiscipline = searchParams.get("discipline");
+    if (qDiscipline) {
+      setSelectedDiscipline(qDiscipline);
+    }
+  }, [searchParams]);
+
   const disciplines = [
     { label: "All Disciplines", count: 1842, value: "All" },
+    { label: "Forceps & Clamps", count: 312, value: "Forceps" },
+    { label: "Dental & Maxillofacial", count: 164, value: "Dental" },
+    { label: "Orthopedic Suite", count: 215, value: "Orthopedic" },
     { label: "Scissors & Cutting", count: 248, value: "Scissors & Cutting" },
-    { label: "Forceps & Clamps", count: 312, value: "Forceps & Clamps" },
     { label: "Needle Holders", count: 156, value: "Needle Holders" },
     { label: "Retractors & Specula", count: 190, value: "Retractors & Specula" },
-    { label: "Orthopedic Suite", count: 215, value: "Orthopedic Suite" },
     { label: "Diagnostic & Micro", count: 160, value: "Diagnostic & Micro" },
   ];
 
@@ -50,6 +58,10 @@ export const CataloguePage: React.FC<CataloguePageProps> = ({
       const matchDiscipline =
         selectedDiscipline === "All" ||
         item.discipline.toLowerCase().includes(selectedDiscipline.toLowerCase()) ||
+        item.name.toLowerCase().includes(selectedDiscipline.toLowerCase()) ||
+        (selectedDiscipline.toLowerCase() === "forceps" && (item.discipline.toLowerCase().includes("forcep") || item.name.toLowerCase().includes("forcep"))) ||
+        (selectedDiscipline.toLowerCase() === "dental" && (item.discipline.toLowerCase().includes("dental") || item.name.toLowerCase().includes("dental"))) ||
+        (selectedDiscipline.toLowerCase() === "orthopedic" && (item.discipline.toLowerCase().includes("orthopedic") || item.discipline.toLowerCase().includes("bone") || item.name.toLowerCase().includes("rongeur") || item.name.toLowerCase().includes("retractor"))) ||
         (selectedDiscipline === "Retractors" && item.discipline.includes("Retractor"));
 
       const matchAlloy =
