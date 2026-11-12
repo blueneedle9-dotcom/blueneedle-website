@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAdminContext } from '../../components/AdminLayout';
 
 interface InquiryItem {
@@ -322,25 +323,27 @@ export const AdminInquiriesPage: React.FC = () => {
   const operatorName = adminUser?.fullName || 'Tariq Mehmood';
 
   return (
-    <div className="flex flex-col w-full gap-space-lg">
-      {/* Top Command Banner / Header */}
-      <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-space-md bg-surface-container-lowest p-space-lg rounded-xl shadow-sm">
-        <div className="flex flex-col gap-space-xs max-w-3xl">
-          <div className="flex items-center gap-2">
-            <span className="font-label-code text-label-code text-secondary tracking-widest uppercase">
-              REGULATORY &amp; B2B DESK
+    <div className="w-full px-gutter py-space-xl flex flex-col gap-space-xl max-w-[1720px] mx-auto">
+      {/* Top Breadcrumb & Page Actions Header */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md">
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-space-xs text-on-surface-variant font-caption text-caption">
+            <span className="hover:text-primary transition-colors cursor-pointer">
+              Customer Relations
             </span>
-            <span className="w-1.5 h-1.5 rounded-full bg-secondary" />
-            <span className="font-label-technical text-label-technical text-on-surface-variant">
-              DIN EN ISO 13485:2016 COMPLIANT
+            <span className="material-symbols-outlined text-xs">chevron_right</span>
+            <span className="text-primary font-caption-bold">B2B Inquiries &amp; Tenders</span>
+          </div>
+          <div className="flex items-baseline gap-space-sm mt-0.5">
+            <h1 className="font-headline-lg text-headline-lg text-primary tracking-tight">
+              Inquiry Management
+            </h1>
+            <span className="hidden sm:inline-flex px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-caption-bold text-caption tracking-normal">
+              Regulatory Batch v4.1
             </span>
           </div>
-          <h1 className="font-headline-lg text-headline-lg text-primary tracking-tight font-semibold">
-            Customer Inquiry Management
-          </h1>
-          <p className="font-body-md text-body-md text-on-surface-variant">
-            Review, triage, and reply to international hospital tenders, procurement requests, and
-            distributor inquiries across regulated health systems.
+          <p className="font-body-default text-body-default text-on-surface-variant">
+            Manage international hospital tenders, procurement requests, and institutional wholesale inquiries.
           </p>
         </div>
 
@@ -348,17 +351,17 @@ export const AdminInquiriesPage: React.FC = () => {
           <button
             type="button"
             onClick={() => showToast('Exported B2B inquiry log to CSV.')}
-            className="flex items-center gap-2 px-space-md py-2.5 rounded bg-surface-container-low text-secondary hover:bg-surface-container hover:text-primary transition-all font-label-lg text-label-lg"
+            className="h-9 px-space-md rounded-lg bg-surface-container-lowest text-on-surface border border-surface-container-high hover:bg-surface-container-low transition-colors font-button-text text-button-text flex items-center gap-1.5 shadow-sm"
           >
-            <span className="material-symbols-outlined text-[18px]">file_download</span>
-            <span>Export Inquiries Log (CSV)</span>
+            <span className="material-symbols-outlined text-base">download</span>
+            <span>Export Inquiries (CSV)</span>
           </button>
           <button
             type="button"
             onClick={handleMarkAllRead}
-            className="flex items-center gap-2 px-space-md py-2.5 rounded bg-surface-container-high text-on-surface hover:bg-secondary-container hover:text-on-secondary-container transition-all font-label-lg text-label-lg font-medium"
+            className="h-9 px-space-md rounded-lg bg-surface-container-lowest text-on-surface border border-surface-container-high hover:bg-surface-container-low transition-colors font-button-text text-button-text flex items-center gap-1.5 shadow-sm"
           >
-            <span className="material-symbols-outlined text-[18px]">done_all</span>
+            <span className="material-symbols-outlined text-base">done_all</span>
             <span>Mark All as Read</span>
           </button>
         </div>
@@ -1041,6 +1044,13 @@ export const AdminInquiriesPage: React.FC = () => {
                 </label>
 
                 <div className="flex items-center gap-space-sm w-full sm:w-auto">
+                  <Link
+                    to={`/admin/email?to=${encodeURIComponent(selectedInquiry.email)}&subject=${encodeURIComponent(replySubject)}`}
+                    className="px-space-md py-2.5 rounded bg-surface-container-low text-secondary hover:bg-surface-container font-label-lg text-label-lg transition-colors flex items-center gap-1.5"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">outgoing_mail</span>
+                    <span>Open in Email Sender</span>
+                  </Link>
                   <button
                     type="button"
                     onClick={() => showToast(`Draft response saved for ${selectedInquiry.tenderId}.`)}

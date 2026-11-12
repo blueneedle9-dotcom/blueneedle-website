@@ -13,6 +13,8 @@ import { CreateAccountPage } from './pages/CreateAccountPage';
 import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
 import { AdminDashboardPage } from './pages/admin/AdminDashboardPage';
 import { AdminProductsPage } from './pages/admin/AdminProductsPage';
+import { AdminAddProductPage } from './pages/admin/AdminAddProductPage';
+import { AdminEmailSenderPage } from './pages/admin/AdminEmailSenderPage';
 import { AdminCategoriesPage } from './pages/admin/AdminCategoriesPage';
 import { AdminInquiriesPage } from './pages/admin/AdminInquiriesPage';
 import { AdminContentPage } from './pages/admin/AdminContentPage';
@@ -125,8 +127,11 @@ const AppShell: React.FC = () => {
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboardPage />} />
           <Route path="products" element={<AdminProductsPage />} />
+          <Route path="products/new" element={<AdminAddProductPage />} />
+          <Route path="products/:id/edit" element={<AdminAddProductPage />} />
           <Route path="categories" element={<AdminCategoriesPage />} />
           <Route path="inquiries" element={<AdminInquiriesPage />} />
+          <Route path="email" element={<AdminEmailSenderPage />} />
           <Route path="content" element={<AdminContentPage />} />
           <Route path="profile" element={<AdminSettingsPage />} />
           <Route path="settings" element={<AdminSettingsPage />} />

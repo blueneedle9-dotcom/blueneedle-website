@@ -302,52 +302,48 @@ export const AdminCategoriesPage: React.FC = () => {
   }, [categories, searchTerm]);
 
   return (
-    <div className="flex flex-col w-full">
-      {/* Top Control Deck & Breadcrumbs */}
-      <div className="flex flex-col gap-space-md mb-space-lg">
-        <div className="flex items-center justify-between flex-wrap gap-space-sm">
-          <div className="flex flex-col">
-            <div className="flex items-center gap-2">
-              <span className="font-label-technical text-label-technical text-secondary uppercase tracking-wider">
-                TAXONOMY ARCHITECTURE
-              </span>
-              <span className="w-1.5 h-1.5 rounded-full bg-secondary" />
-              <span className="font-label-code text-label-code text-on-surface-variant">
-                DIN EN ISO 13485:2016 COMPLIANT
-              </span>
-            </div>
-            <h1 className="font-headline-lg text-headline-lg text-primary tracking-tight mt-0.5">
-              Category Management
-            </h1>
-            <p className="font-body-md text-body-md text-on-surface-variant max-w-3xl mt-1">
-              Organize medical instrument taxonomy, category hero images, descriptions, and
-              catalogue classifications for procurement RFQs.
-            </p>
+    <div className="w-full px-gutter py-space-xl flex flex-col gap-space-xl max-w-[1680px] mx-auto">
+      {/* Top Header Bar */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-space-md">
+        <div className="flex flex-col gap-space-xs">
+          <div className="flex items-center gap-space-xs text-on-surface-variant font-caption text-caption">
+            <span>Catalog Taxonomy</span>
+            <span className="material-symbols-outlined text-[14px]">chevron_right</span>
+            <span className="text-primary font-caption-bold text-caption-bold">
+              Category Master List
+            </span>
           </div>
-
-          <div className="flex items-center gap-space-sm self-start sm:self-auto">
-            <button
-              type="button"
-              onClick={() => setReorderMode((prev) => !prev)}
-              className={`flex items-center gap-2 px-space-md py-2 rounded-lg transition-colors font-label-lg text-label-lg shadow-sm ${
-                reorderMode
-                  ? 'bg-secondary-container text-on-secondary-container font-semibold'
-                  : 'bg-surface-container-low text-primary hover:bg-surface-container-high'
-              }`}
-            >
-              <span className="material-symbols-outlined text-[18px]">swap_vert</span>
-              <span>{reorderMode ? 'Done Reordering' : 'Reorder Categories'}</span>
-            </button>
-            <button
-              type="button"
-              onClick={focusQuickEditor}
-              className="flex items-center gap-2 px-space-md py-2 rounded-lg bg-primary-container text-on-primary hover:bg-primary transition-all font-label-lg text-label-lg shadow-sm"
-            >
-              <span className="material-symbols-outlined text-[18px]">add</span>
-              <span>+ Add New Category</span>
-            </button>
-          </div>
+          <h1 className="font-headline-lg text-headline-lg text-primary tracking-tight">
+            Category Management
+          </h1>
+          <p className="font-body-default text-body-default text-on-surface-variant max-w-2xl">
+            Organize medical instrument taxonomy, categories, catalog divisions, and public mega-menu visibility.
+          </p>
         </div>
+
+        <div className="flex items-center gap-space-sm flex-wrap">
+          <button
+            type="button"
+            onClick={() => setReorderMode((prev) => !prev)}
+            className={`inline-flex items-center gap-space-xs px-space-md py-space-sm rounded-lg shadow-sm font-button-text text-button-text transition-colors border border-surface-container-high ${
+              reorderMode
+                ? 'bg-secondary-container text-on-secondary-container font-semibold'
+                : 'bg-surface-container-lowest text-on-surface hover:bg-surface-container'
+            }`}
+          >
+            <span className="material-symbols-outlined text-base">swap_vert</span>
+            <span>{reorderMode ? 'Done Reordering' : 'Reorder Hierarchy'}</span>
+          </button>
+          <button
+            type="button"
+            onClick={focusQuickEditor}
+            className="inline-flex items-center gap-space-xs px-space-md py-space-sm rounded-lg bg-primary-container text-on-primary hover:bg-primary shadow-sm font-button-text text-button-text transition-all"
+          >
+            <span className="material-symbols-outlined text-base">add</span>
+            <span>Add New Category</span>
+          </button>
+        </div>
+      </div>
 
         {/* Metrics Row */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-space-md">
@@ -433,7 +429,6 @@ export const AdminCategoriesPage: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
 
       {/* Main Dual-Pane Grid Layout (70% / 30%) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start">

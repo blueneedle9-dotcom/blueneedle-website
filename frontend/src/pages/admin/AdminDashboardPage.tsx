@@ -3,22 +3,20 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAdminContext } from '../../components/AdminLayout';
 
 interface RecentInquiryRow {
-  initials: string;
-  contact: string;
-  subLabel: string;
-  institution: string;
+  id: string;
+  customer: string;
+  company: string;
   countryCode: string;
-  location: string;
-  subject: string;
-  specNote: string;
-  submitted: string;
-  status: 'NEW' | 'READ' | 'REPLIED';
+  country: string;
+  email: string;
+  date: string;
+  status: 'New' | 'Read' | 'Replied';
 }
 
 interface RecentProductItem {
+  id: string;
   name: string;
-  specLine: string;
-  addedLabel: string;
+  category: string;
   status: 'Published' | 'Draft Review';
   imageUrl: string;
   imageAlt: string;
@@ -26,580 +24,557 @@ interface RecentProductItem {
 
 const RECENT_INQUIRIES: RecentInquiryRow[] = [
   {
-    initials: 'JV',
-    contact: 'Dr. Julian Vogel',
-    subLabel: 'jvogel@charite.de',
-    institution: 'Charité Universitätsmedizin',
+    id: 'inq-1',
+    customer: 'Dr. Julian Vogel',
+    company: 'Charité Universitätsmedizin',
     countryCode: 'DE',
-    location: 'Berlin, Germany',
-    subject: 'Bulk Requisition for TC Mayo Scissors & Adson Forceps',
-    specNote: 'Target: 350 Units DIN 1.4021',
-    submitted: 'Today, 10:24 AM',
-    status: 'NEW',
+    country: 'Germany',
+    email: 'j.vogel@charite.de',
+    date: 'Oct 25, 2024',
+    status: 'New',
   },
   {
-    initials: 'SJ',
-    contact: 'Sarah Jenkins',
-    subLabel: 'Head Nurse / Lead OR',
-    institution: 'Barts Health NHS Trust',
+    id: 'inq-2',
+    customer: 'Sarah Jenkins',
+    company: 'Barts Health NHS Trust',
     countryCode: 'GB',
-    location: 'London, UK',
-    subject: 'Orthopedic Rongeur & Kerrison Punch Specifications',
-    specNote: 'Tender Spec Verification',
-    submitted: 'Yesterday, 04:15 PM',
-    status: 'NEW',
+    country: 'United Kingdom',
+    email: 's.jenkins@bartshealth.nhs.uk',
+    date: 'Oct 24, 2024',
+    status: 'New',
   },
   {
-    initials: 'KM',
-    contact: 'Khalid Al-Mansoor',
-    subLabel: 'Managing Director',
-    institution: 'MedSupply Gulf Trading LLC',
+    id: 'inq-3',
+    customer: 'Khalid Al-Mansoor',
+    company: 'MedSupply Gulf Trading',
     countryCode: 'AE',
-    location: 'Dubai, UAE',
-    subject: 'Annual Distributor Agreement & CE Technical Dossier',
-    specNote: 'MDR 2017/745 Class I Re-file',
-    submitted: 'Oct 24, 2024',
-    status: 'READ',
+    country: 'UAE',
+    email: 'procurement@medsupplygulf.ae',
+    date: 'Oct 23, 2024',
+    status: 'Read',
   },
   {
-    initials: 'MR',
-    contact: 'Dr. Marcella Rossi',
-    subLabel: 'Head of Ophthalmic Surgery',
-    institution: 'Ospedale San Raffaele Milano',
+    id: 'inq-4',
+    customer: 'Dr. Marcella Rossi',
+    company: 'Ospedale San Raffaele',
     countryCode: 'IT',
-    location: 'Milan, Italy',
-    subject: 'Castroviejo Micro Caliper & Ophthalmic Sets',
-    specNote: 'Titanium Alloy Specs Required',
-    submitted: 'Oct 23, 2024',
-    status: 'REPLIED',
+    country: 'Italy',
+    email: 'm.rossi@sanraffaele.it',
+    date: 'Oct 22, 2024',
+    status: 'Replied',
   },
   {
-    initials: 'AL',
-    contact: 'Arthur Lindqvist',
-    subLabel: 'Head of Sourcing',
-    institution: 'Nordic Surgical AB',
+    id: 'inq-5',
+    customer: 'Arthur Lindqvist',
+    company: 'Nordic Surgical AB',
     countryCode: 'SE',
-    location: 'Stockholm, Sweden',
-    subject: 'Private Label OEM Stamping for Crile-Wood Needle Holders',
-    specNote: 'Laser Etched EAN-128 Batching',
-    submitted: 'Oct 22, 2024',
-    status: 'REPLIED',
+    country: 'Sweden',
+    email: 'a.lindqvist@nordicsurgical.se',
+    date: 'Oct 20, 2024',
+    status: 'Replied',
   },
 ];
 
 const RECENT_PRODUCTS: RecentProductItem[] = [
   {
-    name: 'Mayo Dissecting Scissors',
-    specLine: 'Straight 170mm, TC • BN-SC-1021',
-    addedLabel: 'Added Today',
+    id: 'prod-1',
+    name: 'Metzenbaum-Nelson TC Scissors (180mm)',
+    category: 'Surgical Instruments',
     status: 'Published',
     imageUrl:
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuCi2JEk-jBlhyKbXvVrtTkcWrO8degpzLGsNZ8xqCxRjDdcFqq0RDF6TabwBfRDoW4CvgGXVTz4jMORVjOy_e9LA-95Vrx8YU3f9eNBVivbOCoiqTC1-BjvBWPMuIW31FqJLNKVNH59gV-5vDkR6An0lNJR0hWP_2cCk2PgKyWKT70SQzUOqqjDij1YZXSfqxNgsQdh2BUNask-8iHQIvHbi-EpcPVC9-ewEHkmeQo',
-    imageAlt:
-      'High precision close-up of surgical stainless steel Mayo Dissecting Scissors with gold plated tungsten carbide finger rings',
+      'https://lh3.googleusercontent.com/aida-public/AB6AXuBeOCOE9wSrArSXfpkSf14NUafsVRHFInPk4cTEul5iSGqt3GVVXCrX8EMpoAuYeyreOppBJfb1_Uw48Ri_qKNtQ0gLyKL3DY-uSmfUBSzWaZRYapCfIuLv-UDywBMOBbwPkeYOC9fNhrDe4WAnVkeICY_PuHc9kmSqXTFwujJ-olEuhkH2Da8Oa5UHmM5QQ9j5mMgJUmBqJFQBX9Hpsl89kAYstb9pnLyN-mv6Tg4',
+    imageAlt: 'Close up shot of stainless steel Metzenbaum-Nelson surgical scissors',
   },
   {
-    name: 'Adson Micro Tissue Forceps',
-    specLine: '1x2 Teeth, 120mm • BN-FC-2180',
-    addedLabel: 'Added Yesterday',
+    id: 'prod-2',
+    name: 'Halsted Mosquito Forceps Curved (12.5cm)',
+    category: 'Hemostats',
     status: 'Published',
     imageUrl:
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuB6XfuijZzLuyTzmXbUsBSiZB157i3OmGAvhmRgHoy_u4_6xan-9h0b7C1hwj8s8UXnF2a9RaXbIzY4e5ho6SVirFCmXFmKiX1Stt5GhqbsxoItRvzLFs4xZQTddP0UWaf7waO7Nd42K2IPmk9cFIzTkcnmACrfatGiqD4fa2DuGM2H2YCQYwMan-Q0O22nRWGLmr9pvQjuzz2z0_eoRdxXRNWpQTDTeR-oVhmSA7o',
-    imageAlt:
-      'Macro product photo of medical grade Adson Micro Tissue Forceps with fine 1x2 teeth tips',
+      'https://lh3.googleusercontent.com/aida-public/AB6AXuBDVGrDoKuAvB8HgIvjWCIfkVsE0_DKVH5MKvbS7IErkY6sRK9IZcWjPbuyllC02Egmi_R-tunOp97k88FWH-KxN_r33ZuhxbSEwO-DBu4EIx45SAVGqYw7B635Ni1iGaDOrtZ8lDqusrFJbh9kG1UH7luK7KakXuXcvkhqlM2TCUF4NTEvID6w7gm34bnC1sd7Z_CstOTNWg-3N4CQ29nBXmgftjIN5SFP1IyoGLg',
+    imageAlt: 'High precision stainless steel Halsted Mosquito Forceps',
   },
   {
-    name: 'Kerrison Bone Rongeur',
-    specLine: 'Up-Cut 40° 4mm • BN-OR-6120',
-    addedLabel: 'Oct 21, 2024',
+    id: 'prod-3',
+    name: 'Crile-Wood TC Needle Holder (Gold Handle)',
+    category: 'Suturing & Ligation',
+    status: 'Published',
+    imageUrl:
+      'https://lh3.googleusercontent.com/aida-public/AB6AXuAvJtWO7P1ChDcChxVOsKwt4vrUiq5DO0-8_jV-A7nIpohTL705ziNBHyuOp2IN0IzU8Oll3VlZs989TLcZN-8RygfIF-xWWPRdV221d5m_jRkesvRB8UNC5mf2Bb-fPnLoISkxhwkJhFu13RogpWY4KbDAGsdJIj9r4SaO7Yl_pJaOmolBZZopq9n7uQ7b7foCcbyjf-8dR_xMtVt97ltX3Z-u7bmDKhUB9Fmt9ik',
+    imageAlt: 'Crile-Wood surgical needle holder with gold-plated ring handles',
+  },
+  {
+    id: 'prod-4',
+    name: 'Beyer Bone Rongeur Double-Action',
+    category: 'Orthopedic',
     status: 'Draft Review',
     imageUrl:
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuCM7HaVvz8HnHE1Zmfk8UbUkaQodTp9J7hNhCIQL9EWBFH35zCyGPrdyodBZ1QHA6BdoGjTbaWvqs1FW0Nprui_7qWQRZN-0h-V4bhxUlGsW-eZw08xC5UEh2KLnhzqcXYTS_AHtIlG0RgEJSR1DHxMzOP8iur1PuBCnlKcRVbHsGSYiS78LIuw0wcDN6fDwsE56bwyyHpXYjl0YG-Q5MMlmXSYt9JBL1FUmYKgWvY',
-    imageAlt:
-      'Orthopedic Kerrison Bone Rongeur heavy surgical instrument angled view',
-  },
-  {
-    name: 'Castroviejo Needle Holder',
-    specLine: 'Micro Straight, Lock • BN-OP-7005',
-    addedLabel: 'Oct 19, 2024',
-    status: 'Published',
-    imageUrl:
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuDS1HwqPaQZojTw37R5PdHn2KE0O7w5u9c5d9MjZT-X8MqLnvf6l8GtUoQ5EQ6gl177-3uxVxdcaPI48Qj2P9ICM4Ct6LSEVj4MQEkHF8KSMbKwd8gicetD-U09gpoeDxjYPZbxs60m77M-alQjXC_MWF6977UeJGkpayNg612O4RrCgMWQ_sh7lx7CnwtMsxs4Ko0747HTF9DVMjq1dCnQo6A7VEDGGYqquBLZWPo',
-    imageAlt:
-      'Micro Castroviejo Needle Holder with intricate knurled handle and micro jaws',
+      'https://lh3.googleusercontent.com/aida-public/AB6AXuDsZP3dkaN0IN7-LqeZdfBUR6VzKWdLWRgEeZ0Yunio_keuoSmGGx9BnFluoa7oILUVugzL7CVAuUOnUVmxW3LsVgZHVHJXUIexVRy14FVDiGgNGijJ36djW1706ud1OkTTGSfvX1_FfFP2bZi2ZZTB0Rvi7Jmkou2QdXVBe8hPwY4r1TohCYlLrYT24MS0d49uI3d_Ywyij5_F3b6UFKSWkO7y_kuQD0J-dVyUaGg',
+    imageAlt: 'Heavy duty Beyer bone rongeur double action orthopedic surgical tool',
   },
 ];
 
 export const AdminDashboardPage: React.FC = () => {
   const navigate = useNavigate();
-  const { adminUser } = useAdminContext();
-  const [reindexing, setReindexing] = useState(false);
-  const [syncMessage, setSyncMessage] = useState(
-    'Synchronized (Last updated 12 mins ago by Tariq M.)'
-  );
+  const { globalSearch } = useAdminContext();
+  const [downloadingReport, setDownloadingReport] = useState(false);
 
-  const handleForceReindex = () => {
-    setReindexing(true);
+  const handleExportReport = () => {
+    setDownloadingReport(true);
     setTimeout(() => {
-      setReindexing(false);
-      setSyncMessage('Synchronized (Re-indexed just now across CLUSTER-FRANKFURT-04)');
-    }, 800);
+      setDownloadingReport(false);
+      const csvContent =
+        'data:text/csv;charset=utf-8,KPI,Metric,Value\nTotal Products,Active SKUs,2480\nCatalog Published,Compliance,96.5%\nTaxonomy,Divisions,12\nInquiries,Pending,14\n';
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement('a');
+      link.setAttribute('href', encodedUri);
+      link.setAttribute('download', `blueneedle_enterprise_summary_${Date.now()}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }, 600);
   };
 
-  const welcomeName = adminUser?.fullName || 'Eng. Tariq Mehmood';
+  const filteredInquiries = RECENT_INQUIRIES.filter((row) => {
+    if (!globalSearch.trim()) return true;
+    const q = globalSearch.toLowerCase();
+    return (
+      row.customer.toLowerCase().includes(q) ||
+      row.company.toLowerCase().includes(q) ||
+      row.email.toLowerCase().includes(q) ||
+      row.country.toLowerCase().includes(q)
+    );
+  });
 
   return (
-    <div className="flex flex-col w-full space-y-space-lg">
-      {/* Operational Command Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md bg-surface-container-lowest p-space-lg rounded-xl shadow-sm">
-        <div className="flex flex-col space-y-1">
-          <div className="flex items-center gap-2">
-            <span className="font-label-technical text-label-technical text-secondary uppercase tracking-wider">
-              Operational Command
-            </span>
-            <span className="w-1.5 h-1.5 rounded-full bg-secondary" />
-            <span className="font-label-code text-label-code text-on-surface-variant">
-              NODE-EU-CENTRAL-1
-            </span>
-          </div>
-          <h1 className="font-headline-md text-headline-md text-primary font-semibold tracking-tight">
-            Operations &amp; Catalog Overview
-          </h1>
-          <p className="font-body-md text-body-md text-on-surface-variant">
-            Welcome back, <span className="font-semibold text-primary">{welcomeName}</span>. Here is the
-            operational summary of your catalogue and institutional customer inquiries.
-          </p>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-space-sm self-start lg:self-center shrink-0">
-          <Link
-            to="/admin/inquiries"
-            className="inline-flex items-center gap-2 px-space-md py-2.5 rounded-lg bg-surface-container-low text-secondary hover:bg-surface-container-high hover:text-primary transition-colors font-label-lg text-label-lg shadow-sm"
-          >
-            <span className="material-symbols-outlined text-[18px]">
-              mark_email_unread
-            </span>
-            <span>Review Inquiries</span>
-            <span className="px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-code text-label-code font-semibold">
-              14 Unread
-            </span>
-          </Link>
-          <button
-            type="button"
-            onClick={() => navigate('/admin/products?new=1')}
-            className="inline-flex items-center gap-2 px-space-md py-2.5 rounded-lg bg-primary-container text-on-primary hover:bg-primary transition-colors font-label-lg text-label-lg shadow-sm"
-          >
-            <span className="material-symbols-outlined text-[20px]">add</span>
-            <span>Add New Product</span>
-          </button>
-        </div>
-      </div>
-
-      {/* 4 KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md">
-        {/* Card 1 */}
-        <div className="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col justify-between space-y-space-sm hover:shadow-md transition-shadow">
-          <div className="flex items-center justify-between">
-            <span className="font-label-technical text-label-technical text-secondary uppercase">
-              SKU Master Count
-            </span>
-            <div className="w-8 h-8 rounded-lg bg-surface-container-low flex items-center justify-center text-secondary">
-              <span className="material-symbols-outlined text-[20px]">inventory_2</span>
+    <div className="flex flex-col w-full">
+      <div className="w-full px-gutter py-space-xl flex flex-col gap-space-xl max-w-7xl mx-auto">
+        {/* Top Action / Context Bar */}
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md">
+          <div className="flex flex-col">
+            <div className="flex items-center gap-space-xs">
+              <h1 className="font-headline-lg text-headline-lg text-primary tracking-tight">
+                Dashboard
+              </h1>
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-caption-bold font-caption-bold bg-secondary-container text-on-secondary-fixed">
+                Surgical ERP v4.12
+              </span>
             </div>
+            <p className="font-body-default text-body-default text-secondary mt-1">
+              Manage your products, catalog taxonomies, and international B2B inquiries.
+            </p>
           </div>
-          <div className="space-y-1">
-            <div className="flex items-baseline gap-2">
-              <span className="font-display text-display text-primary font-semibold leading-none tracking-tight">
+
+          {/* Action Buttons */}
+          <div className="flex flex-wrap items-center gap-space-sm">
+            <button
+              type="button"
+              onClick={handleExportReport}
+              disabled={downloadingReport}
+              className="inline-flex items-center justify-center gap-1.5 h-10 px-space-md rounded-lg bg-surface-container-lowest text-on-surface hover:bg-surface-container-low transition-colors font-button-text text-button-text shadow-sm border border-surface-container-high"
+            >
+              <span className="material-symbols-outlined text-lg text-secondary">
+                {downloadingReport ? 'hourglass_top' : 'download'}
+              </span>
+              <span>{downloadingReport ? 'Exporting...' : 'Export Summary Report'}</span>
+            </button>
+
+            <Link
+              to="/admin/email"
+              className="inline-flex items-center justify-center gap-1.5 h-10 px-space-md rounded-lg bg-surface-container-lowest text-on-surface hover:bg-surface-container-low transition-colors font-button-text text-button-text shadow-sm border border-surface-container-high"
+            >
+              <span className="material-symbols-outlined text-lg text-secondary">
+                outgoing_mail
+              </span>
+              <span>Send Quick Email</span>
+            </Link>
+
+            <Link
+              to="/admin/products/new"
+              className="inline-flex items-center justify-center gap-1.5 h-10 px-space-lg rounded-lg bg-primary-container text-on-primary hover:bg-primary transition-colors font-button-text text-button-text shadow-sm"
+            >
+              <span className="material-symbols-outlined text-lg">add_circle</span>
+              <span>+ Add New Product</span>
+            </Link>
+          </div>
+        </div>
+
+        {/* 4 KPI / Statistics Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md">
+          {/* Card 1 */}
+          <div className="bg-surface-container-lowest p-space-md rounded-lg border border-surface-container-high shadow-sm flex flex-col justify-between">
+            <div className="flex items-start justify-between">
+              <span className="font-table-header text-table-header text-secondary uppercase tracking-wider">
+                Total Products
+              </span>
+              <div className="w-8 h-8 rounded-lg bg-surface-container-low flex items-center justify-center text-primary-container">
+                <span className="material-symbols-outlined text-lg">inventory_2</span>
+              </div>
+            </div>
+            <div className="mt-space-md">
+              <div className="font-headline-lg text-headline-lg text-primary tracking-tight leading-none">
                 2,480
-              </span>
-              <span className="px-2 py-0.5 rounded bg-surface-container-high text-on-primary-fixed-variant font-label-code text-label-code">
-                Active in Catalogue
-              </span>
+              </div>
+              <div className="flex items-center gap-1.5 mt-2">
+                <span className="inline-flex items-center gap-0.5 text-caption-bold font-caption-bold text-on-secondary px-1.5 py-0.5 rounded bg-secondary">
+                  <span className="material-symbols-outlined text-xs">trending_up</span>+14
+                </span>
+                <span className="font-caption text-caption text-secondary">this month</span>
+              </div>
             </div>
-            <p className="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1.5 pt-1">
-              <span className="material-symbols-outlined text-secondary text-[16px]">
-                trending_up
-              </span>
-              <span className="font-medium text-primary">+18</span> registered this month
-            </p>
           </div>
-          <div className="w-full bg-surface-container h-1 rounded-full overflow-hidden">
-            <div className="bg-secondary h-full rounded-full w-4/5" />
-          </div>
-        </div>
 
-        {/* Card 2 */}
-        <div className="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col justify-between space-y-space-sm hover:shadow-md transition-shadow">
-          <div className="flex items-center justify-between">
-            <span className="font-label-technical text-label-technical text-secondary uppercase">
-              Clinical Disciplines
-            </span>
-            <div className="w-8 h-8 rounded-lg bg-surface-container-low flex items-center justify-center text-secondary">
-              <span className="material-symbols-outlined text-[20px]">folder_copy</span>
+          {/* Card 2 */}
+          <div className="bg-surface-container-lowest p-space-md rounded-lg border border-surface-container-high shadow-sm flex flex-col justify-between">
+            <div className="flex items-start justify-between">
+              <span className="font-table-header text-table-header text-secondary uppercase tracking-wider">
+                Active Products
+              </span>
+              <div className="w-8 h-8 rounded-lg bg-surface-container-low flex items-center justify-center text-primary-container">
+                <span className="material-symbols-outlined text-lg">verified</span>
+              </div>
+            </div>
+            <div className="mt-space-md">
+              <div className="font-headline-lg text-headline-lg text-primary tracking-tight leading-none">
+                2,394
+              </div>
+              <div className="flex items-center gap-1.5 mt-2">
+                <span className="font-body-strong text-body-strong text-primary">96.5%</span>
+                <span className="font-caption text-caption text-secondary">published in catalog</span>
+              </div>
             </div>
           </div>
-          <div className="space-y-1">
-            <div className="flex items-baseline gap-2">
-              <span className="font-display text-display text-primary font-semibold leading-none tracking-tight">
+
+          {/* Card 3 */}
+          <div className="bg-surface-container-lowest p-space-md rounded-lg border border-surface-container-high shadow-sm flex flex-col justify-between">
+            <div className="flex items-start justify-between">
+              <span className="font-table-header text-table-header text-secondary uppercase tracking-wider">
+                Total Categories
+              </span>
+              <div className="w-8 h-8 rounded-lg bg-surface-container-low flex items-center justify-center text-primary-container">
+                <span className="material-symbols-outlined text-lg">category</span>
+              </div>
+            </div>
+            <div className="mt-space-md">
+              <div className="font-headline-lg text-headline-lg text-primary tracking-tight leading-none">
                 12
-              </span>
-              <span className="font-label-code text-label-code text-on-surface-variant">
-                Taxonomy Nodes
-              </span>
+              </div>
+              <div className="flex items-center gap-1.5 mt-2">
+                <span className="font-caption-bold text-caption-bold text-secondary">48</span>
+                <span className="font-caption text-caption text-secondary">sub-specialties mapped</span>
+              </div>
             </div>
-            <p className="font-body-sm text-body-sm text-on-surface-variant truncate pt-1">
-              Surgical, Dental, Orthopedic, Ophthalmic &amp; Micro
-            </p>
           </div>
-          <div className="w-full bg-surface-container h-1 rounded-full overflow-hidden">
-            <div className="bg-secondary-container h-full rounded-full w-full" />
-          </div>
-        </div>
 
-        {/* Card 3 */}
-        <div className="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col justify-between space-y-space-sm hover:shadow-md transition-shadow">
-          <div className="flex items-center justify-between">
-            <span className="font-label-technical text-label-technical text-secondary uppercase">
-              Institutional Inquiries
-            </span>
-            <div className="w-8 h-8 rounded-lg bg-error-container flex items-center justify-center text-on-error-container">
-              <span className="material-symbols-outlined text-[20px]">
-                mark_email_unread
+          {/* Card 4 */}
+          <div className="bg-surface-container-lowest p-space-md rounded-lg border border-surface-container-high shadow-sm flex flex-col justify-between">
+            <div className="flex items-start justify-between">
+              <span className="font-table-header text-table-header text-secondary uppercase tracking-wider">
+                New Inquiries
               </span>
+              <div className="w-8 h-8 rounded-lg bg-error-container flex items-center justify-center text-on-error-container">
+                <span className="material-symbols-outlined text-lg">mark_email_unread</span>
+              </div>
             </div>
-          </div>
-          <div className="space-y-1">
-            <div className="flex items-baseline gap-2">
-              <span className="font-display text-display text-primary font-semibold leading-none tracking-tight">
+            <div className="mt-space-md">
+              <div className="font-headline-lg text-headline-lg text-primary tracking-tight leading-none">
                 14
-              </span>
-              <span className="px-2 py-0.5 rounded bg-error-container text-on-error-container font-label-code text-label-code font-bold">
-                Urgent Attention
-              </span>
+              </div>
+              <div className="flex items-center gap-1.5 mt-2">
+                <span className="w-2 h-2 rounded-full bg-error animate-ping"></span>
+                <span className="font-caption text-caption text-secondary">Unread, requiring response</span>
+              </div>
             </div>
-            <p className="font-body-sm text-body-sm text-on-surface-variant pt-1">
-              <span className="font-semibold text-primary">8</span> EU/US Hospitals,{' '}
-              <span className="font-semibold text-primary">6</span> Distributors
-            </p>
-          </div>
-          <div className="w-full bg-surface-container h-1 rounded-full overflow-hidden">
-            <div className="bg-error h-full rounded-full w-3/5" />
           </div>
         </div>
 
-        {/* Card 4 */}
-        <div className="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col justify-between space-y-space-sm hover:shadow-md transition-shadow">
-          <div className="flex items-center justify-between">
-            <span className="font-label-technical text-label-technical text-secondary uppercase">
-              B2B Public Gateway
-            </span>
-            <div className="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center text-primary-container">
-              <span className="material-symbols-outlined text-[20px]">check_circle</span>
-            </div>
-          </div>
-          <div className="space-y-1">
-            <div className="flex items-baseline gap-2">
-              <span className="font-display text-display text-primary font-semibold leading-none tracking-tight">
-                2,415
-              </span>
-              <span className="px-2 py-0.5 rounded bg-surface-container text-on-secondary-container font-label-code text-label-code font-semibold">
-                97.4% Live
-              </span>
-            </div>
-            <p className="font-body-sm text-body-sm text-on-surface-variant pt-1">
-              <span className="font-medium text-primary">65</span> Pending QA / Metallurgical Review
-            </p>
-          </div>
-          <div className="w-full bg-surface-container h-1 rounded-full overflow-hidden">
-            <div className="bg-primary-container h-full rounded-full w-[97%]" />
-          </div>
-        </div>
-      </div>
-
-      {/* Main Split Grid */}
-      <div className="grid grid-cols-1 xl:grid-cols-12 gap-space-lg">
-        {/* Recent Institutional Inquiries Table (8 cols) */}
-        <div className="xl:col-span-8 bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden flex flex-col justify-between">
-          <div>
-            <div className="p-space-lg flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm bg-surface-container-lowest">
-              <div className="flex flex-col">
-                <div className="flex items-center gap-2">
-                  <h2 className="font-headline-sm text-headline-sm text-primary font-semibold tracking-tight">
-                    Recent Institutional Inquiries
+        {/* Main Content Split Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-space-lg">
+          {/* Left Column: Inquiries Table (8 Cols) */}
+          <div className="lg:col-span-8 flex flex-col gap-space-md">
+            <div className="bg-surface-container-lowest rounded-lg border border-surface-container-high shadow-sm overflow-hidden flex flex-col">
+              {/* Table Header / Title Row */}
+              <div className="p-space-md flex items-center justify-between border-b border-surface-container-high">
+                <div className="flex items-center gap-space-sm">
+                  <h2 className="font-headline-md text-headline-md text-primary">
+                    Recent Inquiries
                   </h2>
-                  <span className="px-2 py-0.5 rounded bg-primary-container text-on-primary font-label-code text-label-code font-medium">
-                    B2B Tender Log
+                  <span className="px-2 py-0.5 rounded text-caption-bold font-caption-bold bg-surface-container-high text-on-surface-variant">
+                    {filteredInquiries.length} Latest
                   </span>
                 </div>
-                <p className="font-body-sm text-body-sm text-on-surface-variant">
-                  Validated hospital procurement directors and private label RFQ drafts.
-                </p>
-              </div>
-              <div className="flex items-center gap-2 self-start sm:self-center">
-                <span className="font-label-code text-label-code text-secondary">
-                  Auto-sync 30s
-                </span>
-                <div className="w-2 h-2 rounded-full bg-secondary" />
-              </div>
-            </div>
-
-            <div className="overflow-x-auto">
-              <table className="w-full text-left font-body-sm text-body-sm">
-                <thead>
-                  <tr className="bg-surface-container-low text-on-surface-variant font-label-technical text-label-technical uppercase tracking-wider">
-                    <th className="py-3 px-space-md">Procurement Contact</th>
-                    <th className="py-3 px-space-md">Institution &amp; Region</th>
-                    <th className="py-3 px-space-md">Subject / Requisition Scope</th>
-                    <th className="py-3 px-space-md">Submitted</th>
-                    <th className="py-3 px-space-md">Status</th>
-                    <th className="py-3 px-space-md text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-surface-container">
-                  {RECENT_INQUIRIES.map((row) => (
-                    <tr
-                      key={row.contact}
-                      className="hover:bg-surface-container-low/50 transition-colors"
-                    >
-                      <td className="py-3.5 px-space-md font-semibold text-primary">
-                        <div className="flex items-center gap-2.5">
-                          <div className="w-7 h-7 rounded-full bg-surface-container-high text-primary flex items-center justify-center font-label-code text-label-code font-bold shrink-0">
-                            {row.initials}
-                          </div>
-                          <div className="flex flex-col">
-                            <span>{row.contact}</span>
-                            <span className="font-label-code text-label-code text-on-surface-variant font-normal">
-                              {row.subLabel}
-                            </span>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="py-3.5 px-space-md">
-                        <div className="flex flex-col">
-                          <span className="font-medium text-primary">{row.institution}</span>
-                          <span className="font-label-code text-label-code text-on-surface-variant flex items-center gap-1">
-                            <span className="px-1 py-0.2 rounded bg-surface-container font-bold text-[10px]">
-                              {row.countryCode}
-                            </span>{' '}
-                            {row.location}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="py-3.5 px-space-md max-w-xs">
-                        <p className="truncate font-medium text-primary" title={row.subject}>
-                          {row.subject}
-                        </p>
-                        <span className="font-label-code text-label-code text-secondary">
-                          {row.specNote}
-                        </span>
-                      </td>
-                      <td className="py-3.5 px-space-md font-label-code text-label-code text-on-surface-variant whitespace-nowrap">
-                        {row.submitted}
-                      </td>
-                      <td className="py-3.5 px-space-md whitespace-nowrap">
-                        {row.status === 'NEW' && (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-technical text-label-technical font-bold">
-                            <span className="w-1.5 h-1.5 rounded-full bg-secondary" /> NEW
-                          </span>
-                        )}
-                        {row.status === 'READ' && (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-surface-container-high text-on-primary-fixed-variant font-label-technical text-label-technical">
-                            <span className="w-1.5 h-1.5 rounded-full bg-secondary" /> READ
-                          </span>
-                        )}
-                        {row.status === 'REPLIED' && (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-surface-container text-primary font-label-technical text-label-technical font-medium">
-                            <span className="material-symbols-outlined text-[14px]">done_all</span> REPLIED
-                          </span>
-                        )}
-                      </td>
-                      <td className="py-3.5 px-space-md text-right whitespace-nowrap">
-                        <div className="inline-flex items-center gap-1">
-                          <button
-                            type="button"
-                            onClick={() => navigate('/admin/inquiries')}
-                            className="p-1 rounded text-secondary hover:text-primary hover:bg-surface-container-high transition-colors"
-                            title="View Dossier"
-                          >
-                            <span className="material-symbols-outlined text-[18px]">
-                              visibility
-                            </span>
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => navigate('/admin/inquiries')}
-                            className="p-1 rounded text-secondary hover:text-primary hover:bg-surface-container-high transition-colors"
-                            title="Dispatch Quotation"
-                          >
-                            <span className="material-symbols-outlined text-[18px]">
-                              {row.status === 'REPLIED' ? 'history' : 'reply'}
-                            </span>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div className="p-space-md bg-surface-container-low flex items-center justify-between">
-            <span className="font-label-technical text-label-technical text-on-surface-variant">
-              Showing latest 5 of 14 outstanding inquiries
-            </span>
-            <Link
-              to="/admin/inquiries"
-              className="inline-flex items-center gap-1 font-label-lg text-label-lg text-primary hover:text-secondary font-semibold transition-colors"
-            >
-              <span>View All Inquiries</span>
-              <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
-            </Link>
-          </div>
-        </div>
-
-        {/* Recently Added Products Panel (4 cols) */}
-        <div className="xl:col-span-4 bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden flex flex-col justify-between">
-          <div>
-            <div className="p-space-lg flex items-center justify-between bg-surface-container-lowest">
-              <div className="flex flex-col">
-                <h2 className="font-headline-sm text-headline-sm text-primary font-semibold tracking-tight">
-                  Recently Added Products
-                </h2>
-                <p className="font-body-sm text-body-sm text-on-surface-variant">
-                  Engineering catalogue additions &amp; revisions.
-                </p>
-              </div>
-              <span className="material-symbols-outlined text-secondary text-[22px]">
-                precision_manufacturing
-              </span>
-            </div>
-
-            <div className="divide-y divide-surface-container">
-              {RECENT_PRODUCTS.map((item) => (
-                <div
-                  key={item.name}
-                  className="p-space-md flex items-center justify-between gap-space-sm hover:bg-surface-container-low/50 transition-colors"
+                <Link
+                  to="/admin/inquiries"
+                  className="font-nav-label text-nav-label text-secondary hover:text-primary transition-colors flex items-center gap-1"
                 >
-                  <div className="flex items-center gap-space-sm min-w-0">
-                    <div className="w-12 h-12 rounded-lg bg-surface-container-low flex-shrink-0 flex items-center justify-center text-secondary relative overflow-hidden">
-                      <img
-                        src={item.imageUrl}
-                        alt={item.imageAlt}
-                        className="w-full h-full object-cover rounded-lg"
-                      />
-                    </div>
-                    <div className="flex flex-col min-w-0">
-                      <span className="font-label-lg text-label-lg text-primary font-semibold truncate">
-                        {item.name}
-                      </span>
-                      <span className="font-label-code text-label-code text-secondary truncate">
-                        {item.specLine}
-                      </span>
-                      <span className="font-label-technical text-label-technical text-on-surface-variant mt-0.5">
-                        {item.addedLabel}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex flex-col items-end gap-1 shrink-0">
-                    <span
-                      className={
-                        item.status === 'Published'
-                          ? 'px-2 py-0.5 rounded bg-surface-container text-on-surface font-label-technical text-label-technical font-semibold'
-                          : 'px-2 py-0.5 rounded bg-surface-container-highest text-on-surface-variant font-label-technical text-label-technical'
-                      }
-                    >
-                      {item.status}
-                    </span>
-                    <div className="flex items-center gap-1 mt-1">
-                      <button
-                        type="button"
-                        onClick={() => navigate('/admin/products')}
-                        className="p-1 rounded text-secondary hover:text-primary hover:bg-surface-container-high transition-colors"
-                        title="Edit Spec Sheet"
+                  <span>View All Inquiries</span>
+                  <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                </Link>
+              </div>
+
+              {/* Table Container */}
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-surface-container-low border-b border-surface-container-high">
+                      <th className="py-3 px-4 font-table-header text-table-header text-secondary uppercase tracking-wider">
+                        Customer
+                      </th>
+                      <th className="py-3 px-4 font-table-header text-table-header text-secondary uppercase tracking-wider">
+                        Company
+                      </th>
+                      <th className="py-3 px-4 font-table-header text-table-header text-secondary uppercase tracking-wider">
+                        Country
+                      </th>
+                      <th className="py-3 px-4 font-table-header text-table-header text-secondary uppercase tracking-wider">
+                        Email
+                      </th>
+                      <th className="py-3 px-4 font-table-header text-table-header text-secondary uppercase tracking-wider">
+                        Date
+                      </th>
+                      <th className="py-3 px-4 font-table-header text-table-header text-secondary uppercase tracking-wider">
+                        Status
+                      </th>
+                      <th className="py-3 px-4 font-table-header text-table-header text-secondary uppercase tracking-wider text-right">
+                        Action
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-surface-container-high">
+                    {filteredInquiries.map((inq) => (
+                      <tr
+                        key={inq.id}
+                        className="hover:bg-surface-container-low transition-colors group"
                       >
-                        <span className="material-symbols-outlined text-[16px]">edit</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => navigate('/admin/products')}
-                        className="p-1 rounded text-secondary hover:text-primary hover:bg-surface-container-high transition-colors"
-                        title="Inspect"
-                      >
-                        <span className="material-symbols-outlined text-[16px]">
-                          visibility
-                        </span>
-                      </button>
-                    </div>
-                  </div>
+                        <td className="py-3 px-4 font-body-strong text-body-strong text-primary whitespace-nowrap">
+                          {inq.customer}
+                        </td>
+                        <td className="py-3 px-4 font-body-default text-body-default text-secondary whitespace-nowrap">
+                          {inq.company}
+                        </td>
+                        <td className="py-3 px-4 whitespace-nowrap">
+                          <span className="inline-flex items-center gap-1.5 font-caption text-caption text-on-surface">
+                            <span className="w-4 h-3 bg-slate-200 rounded-sm flex items-center justify-center font-bold text-[9px] leading-none text-slate-700">
+                              {inq.countryCode}
+                            </span>
+                            <span>{inq.country}</span>
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 font-caption text-caption text-secondary font-mono whitespace-nowrap">
+                          {inq.email}
+                        </td>
+                        <td className="py-3 px-4 font-caption text-caption text-on-surface-variant whitespace-nowrap">
+                          {inq.date}
+                        </td>
+                        <td className="py-3 px-4 whitespace-nowrap">
+                          {inq.status === 'New' && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full font-caption-bold text-caption-bold bg-tertiary-fixed text-on-tertiary-fixed border border-tertiary-fixed-dim">
+                              New
+                            </span>
+                          )}
+                          {inq.status === 'Read' && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full font-caption-bold text-caption-bold bg-secondary-container text-on-secondary-container">
+                              Read
+                            </span>
+                          )}
+                          {inq.status === 'Replied' && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full font-caption-bold text-caption-bold bg-primary-fixed text-on-primary-fixed border border-outline-variant">
+                              Replied
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-3 px-4 text-right whitespace-nowrap">
+                          <button
+                            type="button"
+                            onClick={() => navigate('/admin/inquiries')}
+                            className="h-8 px-3 rounded bg-surface-container-low text-primary hover:bg-surface-container hover:text-primary-container font-button-text text-button-text transition-colors border border-surface-container-high"
+                          >
+                            View
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Table Footer Info */}
+              <div className="px-space-md py-3 bg-surface-container-low border-t border-surface-container-high flex items-center justify-between text-caption text-secondary">
+                <span>Showing latest 5 of 14 active wholesale inquiries</span>
+                <div className="flex items-center gap-1">
+                  <span className="inline-block w-2 h-2 rounded-full bg-secondary"></span>
+                  <span>Updated 3 mins ago</span>
                 </div>
-              ))}
+              </div>
+            </div>
+
+            {/* Manufacturing QA Status Banner */}
+            <div className="bg-surface-container-lowest p-space-md rounded-lg border border-surface-container-high shadow-sm flex flex-col md:flex-row items-center justify-between gap-space-md">
+              <div className="flex items-center gap-space-md">
+                <div className="w-12 h-12 rounded-lg bg-surface-container-low flex items-center justify-center text-primary-container shrink-0">
+                  <span className="material-symbols-outlined text-2xl">medical_services</span>
+                </div>
+                <div>
+                  <div className="font-headline-sm text-headline-sm text-primary">
+                    German Medical Grade Steel Alloy (DIN 1.4021)
+                  </div>
+                  <p className="font-caption text-caption text-secondary">
+                    Quality inspection batch compliance rating for current catalog
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-space-md w-full md:w-auto justify-end">
+                <div className="flex flex-col items-end">
+                  <span className="font-body-strong text-body-strong text-primary">
+                    99.8% Passed
+                  </span>
+                  <span className="font-caption text-caption text-secondary">
+                    ISO 13485:2016 Certified
+                  </span>
+                </div>
+                <div className="w-16 h-2 bg-surface-container-high rounded-full overflow-hidden">
+                  <div className="h-full bg-secondary" style={{ width: '99.8%' }}></div>
+                </div>
+              </div>
             </div>
           </div>
 
-          <div className="p-space-md bg-surface-container-low flex items-center justify-between">
-            <span className="font-label-technical text-label-technical text-on-surface-variant">
-              2,480 items in repository
-            </span>
-            <Link
-              to="/admin/products"
-              className="inline-flex items-center gap-1 font-label-lg text-label-lg text-primary hover:text-secondary font-semibold transition-colors"
-            >
-              <span>Manage Full Catalogue</span>
-              <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
-            </Link>
-          </div>
-        </div>
-      </div>
+          {/* Right Column: Quick Actions & Recently Added Products (4 Cols) */}
+          <div className="lg:col-span-4 flex flex-col gap-space-md">
+            {/* Card A: Quick Actions */}
+            <div className="bg-surface-container-lowest p-space-md rounded-lg border border-surface-container-high shadow-sm flex flex-col">
+              <h2 className="font-headline-md text-headline-md text-primary mb-space-sm">
+                Quick Actions
+              </h2>
+              <div className="grid grid-cols-2 gap-space-sm">
+                <Link
+                  to="/admin/products/new"
+                  className="flex flex-col items-start p-space-sm rounded-lg bg-surface-container-low hover:bg-surface-container hover:shadow-sm transition-all border border-surface-container-high group"
+                >
+                  <span className="material-symbols-outlined text-primary-container group-hover:scale-110 transition-transform mb-1">
+                    add_box
+                  </span>
+                  <span className="font-button-text text-button-text text-primary">
+                    Add Product
+                  </span>
+                  <span className="font-caption text-caption text-secondary text-xs">
+                    Direct catalog add
+                  </span>
+                </Link>
 
-      {/* Public Website Sync Telemetry Footer */}
-      <div className="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col md:flex-row items-center justify-between gap-space-md">
-        <div className="flex flex-wrap items-center gap-x-space-lg gap-y-2 text-on-surface-variant font-label-technical text-label-technical">
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-secondary" />
-            <span className="text-primary font-semibold">Public Website Sync:</span>
-            <span>{syncMessage}</span>
-          </div>
-          <div className="hidden sm:inline-block text-outline-variant">•</div>
-          <div className="flex items-center gap-1.5">
-            <span className="material-symbols-outlined text-secondary text-[16px]">speed</span>
-            <span>
-              Database Latency: <strong className="text-primary font-label-code">24ms</strong>
-            </span>
-          </div>
-          <div className="hidden sm:inline-block text-outline-variant">•</div>
-          <div className="flex items-center gap-1.5">
-            <span className="material-symbols-outlined text-secondary text-[16px]">
-              cloud_queue
-            </span>
-            <span>
-              Catalog Asset Storage:{' '}
-              <strong className="text-primary font-label-code">4.2 GB / 50 GB</strong> (8.4%)
-            </span>
-          </div>
-        </div>
+                <Link
+                  to="/admin/categories"
+                  className="flex flex-col items-start p-space-sm rounded-lg bg-surface-container-low hover:bg-surface-container hover:shadow-sm transition-all border border-surface-container-high group"
+                >
+                  <span className="material-symbols-outlined text-primary-container group-hover:scale-110 transition-transform mb-1">
+                    account_tree
+                  </span>
+                  <span className="font-button-text text-button-text text-primary">
+                    Categories
+                  </span>
+                  <span className="font-caption text-caption text-secondary text-xs">
+                    Organize taxonomy
+                  </span>
+                </Link>
 
-        <div className="flex items-center gap-2 self-end md:self-center shrink-0">
-          <button
-            type="button"
-            onClick={handleForceReindex}
-            disabled={reindexing}
-            className="px-2.5 py-1 rounded bg-surface-container text-secondary hover:text-primary text-label-code font-label-code transition-colors flex items-center gap-1 disabled:opacity-60"
-          >
-            <span
-              className={`material-symbols-outlined text-[14px] ${
-                reindexing ? 'animate-spin' : ''
-              }`}
-            >
-              refresh
-            </span>
-            <span>{reindexing ? 'Re-indexing...' : 'Force Re-index'}</span>
-          </button>
-          <span className="font-label-code text-[11px] text-outline font-medium">
-            CLUSTER-FRANKFURT-04
-          </span>
+                <Link
+                  to="/admin/inquiries"
+                  className="flex flex-col items-start p-space-sm rounded-lg bg-surface-container-low hover:bg-surface-container hover:shadow-sm transition-all border border-surface-container-high group"
+                >
+                  <span className="material-symbols-outlined text-primary-container group-hover:scale-110 transition-transform mb-1">
+                    mark_chat_unread
+                  </span>
+                  <span className="font-button-text text-button-text text-primary">
+                    Inquiries
+                  </span>
+                  <span className="font-caption text-caption text-secondary text-xs">
+                    Triage lead queue
+                  </span>
+                </Link>
+
+                <Link
+                  to="/admin/email"
+                  className="flex flex-col items-start p-space-sm rounded-lg bg-surface-container-low hover:bg-surface-container hover:shadow-sm transition-all border border-surface-container-high group"
+                >
+                  <span className="material-symbols-outlined text-primary-container group-hover:scale-110 transition-transform mb-1">
+                    forward_to_inbox
+                  </span>
+                  <span className="font-button-text text-button-text text-primary">
+                    Send Email
+                  </span>
+                  <span className="font-caption text-caption text-secondary text-xs">
+                    Open email sender
+                  </span>
+                </Link>
+              </div>
+            </div>
+
+            {/* Card B: Recently Added Products */}
+            <div className="bg-surface-container-lowest p-space-md rounded-lg border border-surface-container-high shadow-sm flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-space-sm pb-space-xs border-b border-surface-container-high">
+                  <h2 className="font-headline-md text-headline-md text-primary">
+                    Recently Added Products
+                  </h2>
+                  <span className="font-caption text-caption text-secondary">
+                    Catalog Feed
+                  </span>
+                </div>
+
+                {/* List of items */}
+                <div className="flex flex-col divide-y divide-surface-container-high">
+                  {RECENT_PRODUCTS.map((prod) => (
+                    <div
+                      key={prod.id}
+                      className="py-2.5 flex items-center justify-between gap-space-sm"
+                    >
+                      <div className="flex items-center gap-space-sm min-w-0">
+                        <div className="w-10 h-10 rounded bg-surface-container-low border border-surface-container-high overflow-hidden shrink-0 flex items-center justify-center">
+                          <img
+                            className="w-full h-full object-cover"
+                            src={prod.imageUrl}
+                            alt={prod.imageAlt}
+                          />
+                        </div>
+                        <div className="flex flex-col min-w-0">
+                          <span className="font-body-strong text-body-strong text-primary truncate">
+                            {prod.name}
+                          </span>
+                          <span className="font-caption text-caption text-secondary truncate">
+                            {prod.category}
+                          </span>
+                        </div>
+                      </div>
+                      <span
+                        className={`inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-caption-bold font-caption-bold shrink-0 ${
+                          prod.status === 'Published'
+                            ? 'bg-primary-fixed text-on-primary-fixed border border-outline-variant'
+                            : 'bg-tertiary-fixed text-on-tertiary-fixed border border-tertiary-fixed-dim'
+                        }`}
+                      >
+                        {prod.status}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Bottom link */}
+              <div className="mt-space-md pt-space-xs border-t border-surface-container-high">
+                <Link
+                  to="/admin/products"
+                  className="font-nav-label text-nav-label text-primary hover:text-secondary transition-colors flex items-center justify-center gap-1 w-full py-1.5"
+                >
+                  <span>View All 2,480 Products</span>
+                  <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                </Link>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   );
 };
+
+export default AdminDashboardPage;

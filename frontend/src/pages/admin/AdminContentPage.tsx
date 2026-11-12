@@ -84,51 +84,63 @@ export const AdminContentPage: React.FC = () => {
   const publisherName = adminUser?.fullName || 'Tariq Mehmood';
 
   return (
-    <div className="flex flex-col w-full">
-      {/* Top Control Bar / Editorial Breadcrumb Context */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md mb-space-lg">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="font-label-technical text-label-technical text-secondary uppercase tracking-wider">
-              CMS Master Workspace
-            </span>
-            <span className="w-1.5 h-1.5 rounded-full bg-secondary" />
-            <span className="font-label-code text-label-code text-on-surface-variant uppercase">
-              Storefront Localized v3.1
-            </span>
+    <div className="flex flex-col w-full pb-28">
+      {/* Top Action & Context Sub-Bar */}
+      <div className="w-full bg-surface-container-lowest px-gutter py-space-md shadow-sm border-b border-surface-container-high">
+        <div className="max-w-[1680px] mx-auto flex flex-col md:flex-row md:items-center justify-between gap-space-md">
+          {/* Left: Breadcrumb & Title with Operational Tags */}
+          <div className="flex flex-col gap-1.5 min-w-0">
+            <div className="flex items-center gap-space-xs text-on-surface-variant font-caption text-caption">
+              <span>Content Management</span>
+              <span className="material-symbols-outlined text-xs">chevron_right</span>
+              <span className="text-on-surface font-caption-bold">Public Storefront &amp; Regulatory Pages</span>
+            </div>
+            <div className="flex flex-wrap items-center gap-space-sm">
+              <h1 className="font-headline-lg text-headline-lg text-primary tracking-tight">
+                Website Content Management
+              </h1>
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-secondary-container/40 text-on-secondary-container font-caption-bold text-caption-bold">
+                <span className="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></span>
+                Storefront v4.12 Live Synced
+              </div>
+              <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-caption text-caption">
+                <span className="material-symbols-outlined text-xs">hub</span>
+                Edge CDN: 9 PoPs Connected
+              </div>
+            </div>
           </div>
-          <h1 className="font-headline-lg text-headline-lg text-primary font-bold tracking-tight">
-            Website Content Management
-          </h1>
-          <p className="font-body-md text-body-md text-on-surface-variant mt-1 max-w-3xl">
-            Edit public website copy, hero banners, corporate narratives, and contact information
-            without touching code.
-          </p>
-        </div>
 
-        <div className="flex items-center gap-space-sm shrink-0">
-          <Link
-            to="/"
-            target="_blank"
-            className="flex items-center gap-2 px-space-md py-2.5 rounded-lg bg-surface-container-lowest text-primary shadow-sm hover:bg-surface-container-high transition-colors font-label-lg text-label-lg"
-          >
-            <span className="material-symbols-outlined text-[18px] text-secondary">
-              open_in_new
-            </span>
-            <span>Preview Live Website</span>
-          </Link>
-          <button
-            type="button"
-            onClick={handleDeploy}
-            disabled={deployStatus === 'deploying'}
-            className="flex items-center gap-2 px-space-lg py-2.5 rounded-lg bg-primary-container text-on-primary shadow-sm hover:bg-tertiary-container transition-all font-label-lg text-label-lg font-medium disabled:opacity-70"
-          >
-            <span className="material-symbols-outlined text-[18px]">verified</span>
-            <span>Publish All Changes</span>
-          </button>
+          {/* Right: Primary Workflow Controls */}
+          <div className="flex items-center gap-space-sm flex-shrink-0">
+            <Link
+              to="/"
+              target="_blank"
+              className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg bg-surface-container-low text-on-surface hover:bg-surface-container transition-colors font-button-text text-button-text border border-surface-container-high"
+            >
+              <span>Preview Live Website</span>
+              <span className="material-symbols-outlined text-sm">open_in_new</span>
+            </Link>
+            <button
+              type="button"
+              onClick={handleDiscard}
+              className="h-9 px-3.5 rounded-lg bg-surface-container-low text-on-surface-variant hover:text-error hover:bg-error-container/20 transition-colors font-button-text text-button-text border border-surface-container-high"
+            >
+              Discard Changes
+            </button>
+            <button
+              type="button"
+              onClick={handleDeploy}
+              disabled={deployStatus === 'deploying'}
+              className="inline-flex items-center gap-1.5 h-9 px-4 rounded-lg bg-primary-container text-on-primary hover:bg-primary transition-colors font-button-text text-button-text shadow-sm disabled:opacity-70"
+            >
+              <span className="material-symbols-outlined text-sm">cloud_upload</span>
+              <span>Publish All Changes</span>
+            </button>
+          </div>
         </div>
       </div>
 
+      <div className="max-w-[1680px] mx-auto w-full px-gutter py-space-xl">
       {/* Faceted Content Nav Tabs */}
       <div className="flex items-center gap-1 p-1 mb-space-xl bg-surface-container-low rounded-lg overflow-x-auto shadow-sm">
         {TABS.map((tab) => {
@@ -828,6 +840,7 @@ export const AdminContentPage: React.FC = () => {
             </button>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );
