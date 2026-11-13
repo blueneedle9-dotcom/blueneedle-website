@@ -5,53 +5,65 @@ export default {
   theme: {
     extend: {
       colors: {
-        "on-tertiary": "#ffffff",
-        "on-tertiary-fixed": "#231a08",
-        "on-background": "#171d1b",
-        "primary-container": "#243d3a",
-        "primary-fixed": "#cce8e4",
-        "error-container": "#ffdad6",
-        "inverse-on-surface": "#ecf2ef",
-        "surface": "#f5fbf7",
-        "on-secondary-container": "#616361",
-        "surface-container-lowest": "#ffffff",
-        "on-error": "#ffffff",
-        "primary": "#0d2725",
-        "primary-fixed-dim": "#b0ccc8",
-        "surface-dim": "#d5dbd8",
-        "on-error-container": "#93000a",
-        "on-primary-fixed": "#051f1d",
-        "outline": "#727877",
-        "surface-container": "#e9efec",
-        "on-surface-variant": "#414847",
-        "tertiary": "#2b220f",
-        "on-tertiary-fixed-variant": "#514530",
-        "surface-variant": "#dee4e0",
-        "on-primary-container": "#8da8a3",
-        "error": "#ba1a1a",
-        "secondary-container": "#dfe0dd",
-        "surface-bright": "#f5fbf7",
-        "surface-tint": "#4a6360",
-        "tertiary-fixed": "#f2e0c3",
-        "on-surface": "#171d1b",
-        "inverse-surface": "#2c3230",
-        "on-primary-fixed-variant": "#324b48",
-        "secondary-fixed": "#e2e3e0",
-        "surface-container-highest": "#dee4e0",
-        "on-secondary-fixed-variant": "#454745",
-        "inverse-primary": "#b0ccc8",
-        "surface-container-low": "#eff5f1",
-        "outline-variant": "#c1c8c6",
-        "secondary": "#5d5f5d",
-        "tertiary-fixed-dim": "#d6c4a8",
-        "surface-container-high": "#e4e9e6",
-        "tertiary-container": "#423722",
-        "on-secondary": "#ffffff",
-        "on-tertiary-container": "#b0a085",
-        "background": "#f5fbf7",
-        "on-secondary-fixed": "#191c1b",
-        "secondary-fixed-dim": "#c5c7c4",
+        // Deep Navy / Medical Sapphire Palette
+        "primary": "#0F2942",            // Deep Surgical Navy (was #0d2725 dark forest)
+        "primary-container": "#1E4B75",  // Rich Medical Blue (was #243d3a dark emerald)
+        "primary-fixed": "#D8E6F5",      // Ice Sapphire Tint (was #cce8e4 pale green)
+        "primary-fixed-dim": "#AEC9E6",  // Soft Slate Blue (was #b0ccc8)
         "on-primary": "#ffffff",
+        "on-primary-container": "#93BFE6",
+        "on-primary-fixed": "#071D33",
+        "on-primary-fixed-variant": "#153B60",
+        "inverse-primary": "#AEC9E6",
+
+        // Backgrounds & Surfaces (Crisp Clinical Blue-White)
+        "surface": "#F4F7FB",            // Crisp surgical paper white with soft cyan/blue undertone (was #f5fbf7 greenish)
+        "surface-bright": "#F8FAFD",
+        "surface-dim": "#D8E1EC",
+        "surface-container-lowest": "#ffffff",
+        "surface-container-low": "#EEF3F8",  // Clean Cool Slate-Blue White (was #eff5f1 greenish)
+        "surface-container": "#E5ECF4",      // Soft Cool Grey-Blue (was #e9efec greenish)
+        "surface-container-high": "#DBE4EF",
+        "surface-container-highest": "#D1DCE8",
+        "surface-variant": "#D1DCE8",
+        "surface-tint": "#1E4B75",
+        "background": "#F4F7FB",
+
+        // Typography & On-Surfaces
+        "on-surface": "#0C1929",         // Midnight Navy Black (was #171d1b)
+        "on-surface-variant": "#3E4C59", // Steel Slate (was #414847)
+        "on-background": "#0C1929",
+        "inverse-surface": "#1B2735",
+        "inverse-on-surface": "#EEF3F8",
+
+        // Outlines & Borders
+        "outline": "#6B7C8E",            // Cool Slate outline (was #727877)
+        "outline-variant": "#C0CDDB",    // Soft Clinical Silver-Blue border (was #c1c8c6)
+
+        // Secondary & Warm Medical Accents (Gold Rings / Tungsten Carbide Indicators)
+        "secondary": "#4B5B6D",
+        "secondary-container": "#DCE5EE",
+        "secondary-fixed": "#E2E8F0",
+        "secondary-fixed-dim": "#CBD5E1",
+        "on-secondary": "#ffffff",
+        "on-secondary-container": "#202E3D",
+        "on-secondary-fixed": "#0F1A24",
+        "on-secondary-fixed-variant": "#334150",
+
+        "tertiary": "#8A5B14",           // Refined Instrument Gold (for TC gold ring inlays)
+        "tertiary-container": "#52360B",
+        "tertiary-fixed": "#F8EBD4",
+        "tertiary-fixed-dim": "#E5CDA3",
+        "on-tertiary": "#ffffff",
+        "on-tertiary-container": "#E5CDA3",
+        "on-tertiary-fixed": "#2C1B03",
+        "on-tertiary-fixed-variant": "#5E3E0C",
+
+        // Error States
+        "error": "#BA1A1A",
+        "error-container": "#FFDAD6",
+        "on-error": "#ffffff",
+        "on-error-container": "#93000A",
       },
       borderRadius: {
         DEFAULT: "0.125rem",

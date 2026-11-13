@@ -8,7 +8,7 @@ interface FooterProps {
 
 export const Footer: React.FC<FooterProps> = ({ onOpenRfq }) => {
   return (
-    <footer className="w-full bg-[#1C2826] text-surface-container-high border-t border-outline-variant/20 pt-space-xxl pb-space-xl">
+    <footer className="w-full bg-[#0B1A2A] text-surface-container-high border-t border-outline-variant/20 pt-space-xxl pb-space-xl">
       <div className="max-w-[1440px] mx-auto px-gutter-mobile lg:px-margin">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-space-xl pb-space-xl border-b border-outline-variant/15">
           {/* Column 1: Brand & Provenance */}
