@@ -27,7 +27,7 @@ export const AdminProductsPage: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState("All");
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
-  // Drawer / Modal state for adding or editing
+  const [activeSizePopoverId, setActiveSizePopoverId] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<CatalogItem | null>(null);
 
@@ -387,15 +387,86 @@ export const AdminProductsPage: React.FC = () => {
                         </span>
                       </td>
                       <td className="py-space-md px-space-md">
-                        <div className="flex flex-wrap gap-1 max-w-xs">
-                          {sizesList.map((sz, idx) => (
-                            <span
-                              key={idx}
-                              className="px-1.5 py-0.5 bg-surface-container-low border border-outline-variant/30 text-on-surface rounded text-[11px] font-mono whitespace-nowrap"
-                            >
-                              {sz}
+                        {/* Interactive Variation Badge with Popover and Quick Selector */}
+                        <div className="relative inline-block">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setActiveSizePopoverId(
+                                activeSizePopoverId === prod.id ? null : prod.id
+                              )
+                            }
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-surface-container-low hover:bg-surface-container border border-outline-variant/40 hover:border-primary text-xs font-mono transition-all text-left shadow-2xs group"
+                          >
+                            <span className="material-symbols-outlined text-[15px] text-primary">
+                              straighten
                             </span>
-                          ))}
+                            <span className="font-semibold text-primary">
+                              {sizesList[0] || prod.length}
+                            </span>
+                            {sizesList.length > 1 && (
+                              <span className="px-1.5 py-0.2 rounded bg-primary/10 text-primary text-[10px] font-bold group-hover:bg-primary group-hover:text-on-primary transition-colors">
+                                +{sizesList.length - 1} more
+                              </span>
+                            )}
+                            <span className="material-symbols-outlined text-[14px] text-outline group-hover:text-primary transition-transform">
+                              {activeSizePopoverId === prod.id ? "expand_less" : "expand_more"}
+                            </span>
+                          </button>
+
+                          {/* Variations Popover Dropdown */}
+                          {activeSizePopoverId === prod.id && (
+                            <>
+                              <div
+                                className="fixed inset-0 z-40"
+                                onClick={() => setActiveSizePopoverId(null)}
+                              />
+                              <div className="absolute left-0 mt-1.5 w-60 bg-surface-container-lowest rounded-xl shadow-xl border border-outline-variant/30 p-2.5 z-50 animate-fadeIn">
+                                <div className="flex items-center justify-between pb-1.5 mb-1.5 border-b border-outline-variant/20">
+                                  <span className="text-[10px] uppercase font-bold text-outline tracking-wider flex items-center gap-1">
+                                    <span className="material-symbols-outlined text-[14px]">tune</span>
+                                    <span>Size Matrix ({sizesList.length})</span>
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setActiveSizePopoverId(null);
+                                      handleOpenDrawer(prod);
+                                    }}
+                                    className="text-[10px] font-bold text-primary hover:underline"
+                                  >
+                                    Edit Sizes
+                                  </button>
+                                </div>
+                                <div className="space-y-1 max-h-40 overflow-y-auto">
+                                  {sizesList.map((sz, idx) => (
+                                    <div
+                                      key={idx}
+                                      className={`flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-mono transition-colors ${
+                                        idx === 0
+                                          ? "bg-primary/10 text-primary font-bold"
+                                          : "hover:bg-surface-container text-on-surface"
+                                      }`}
+                                    >
+                                      <span className="flex items-center gap-1.5">
+                                        <span
+                                          className={`w-1.5 h-1.5 rounded-full ${
+                                            idx === 0 ? "bg-primary" : "bg-outline"
+                                          }`}
+                                        />
+                                        <span>{sz}</span>
+                                      </span>
+                                      {idx === 0 && (
+                                        <span className="text-[10px] uppercase font-semibold text-primary">
+                                          Default
+                                        </span>
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            </>
+                          )}
                         </div>
                       </td>
                       <td className="py-space-md px-space-md whitespace-nowrap">
