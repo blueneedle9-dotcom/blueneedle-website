@@ -767,6 +767,23 @@ export const AdminDashboardPage: React.FC = () => {
               </button>
             </div>
 
+            <div className="p-3 bg-surface-container-low rounded-xl flex items-center justify-between">
+              <div>
+                <p className="text-sm font-semibold text-primary">Advanced Product Editor with Multi-Images &amp; Size Variations</p>
+                <p className="text-xs text-outline">Manage multiple sizes (lengths/widths) &amp; bulk file uploader in Products console</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setProductModalOpen(false);
+                  navigate('/admin/products');
+                }}
+                className="px-3 py-1.5 bg-primary text-on-primary rounded-lg text-xs font-semibold hover:bg-primary-container shrink-0"
+              >
+                Open Full Editor
+              </button>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-space-md">
               <div className="flex flex-col gap-1">
                 <label className="font-label-md text-label-md font-medium text-on-surface">

@@ -173,6 +173,12 @@ export const VANGUARD_FLAGSHIPS: FlagshipProduct[] = [
   },
 ];
 
+export interface ProductSizeVariation {
+  size: string;
+  skuSuffix?: string;
+  isDefault?: boolean;
+}
+
 export interface CatalogItem {
   id: string;
   sku: string;
@@ -185,11 +191,14 @@ export interface CatalogItem {
   subCategory?: string;
   description: string;
   length: string;
+  sizes?: string[]; // Multiple size variations e.g. ["140 mm", "180 mm", "230 mm"]
+  sizeVariations?: ProductSizeVariation[];
   jawProfile: string;
   material: string;
   finish: string;
   norm: string;
   image: string;
+  images?: string[]; // Multiple product gallery images
   imageAlt: string;
   tag?: string;
 }
