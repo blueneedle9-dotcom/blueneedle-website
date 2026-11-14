@@ -134,7 +134,7 @@ export const VANGUARD_FLAGSHIPS: FlagshipProduct[] = [
     length: '140 mm (5½") / 160 mm',
     specA: { label: "Metallurgy", value: "German Martensitic DIN 1.4021" },
     specB: { label: "Jaw Config", value: "Transverse Serrated 1/2 Jaw" },
-    image: "/images/products/kelly-forceps-straight/image-1.jpg",
+    image: "/images/placeholder-instrument.svg",
     imageAlt: "Kelly Hemostatic Forceps Straight German stainless steel surgical clamp.",
   },
   {
@@ -148,7 +148,7 @@ export const VANGUARD_FLAGSHIPS: FlagshipProduct[] = [
     length: '140 mm (5½") / 160 mm',
     specA: { label: "Curvature Apex", value: "18° Anatomical Radius" },
     specB: { label: "Autoclave Temp", value: "134°C Steam Validated" },
-    image: "/images/products/kelly-forceps-curved/image-1.png",
+    image: "/images/placeholder-instrument.svg",
     imageAlt: "Kelly Curved Hemostatic Forceps with fine curved jaws.",
   },
   {
@@ -162,7 +162,7 @@ export const VANGUARD_FLAGSHIPS: FlagshipProduct[] = [
     length: '200 mm (8") Standard',
     specA: { label: "Jaw Geometry", value: "1.5 mm Non-Crushing Ribbed" },
     specB: { label: "Spring Tension", value: "Calibrated 2.2 N Action" },
-    image: "/images/products/debakey-atraumatic-forceps/image-1.jpg",
+    image: "/images/placeholder-instrument.svg",
     imageAlt: "DeBakey Atraumatic Vascular Dissecting Forceps with non-pinching teeth.",
   },
   {
@@ -176,7 +176,7 @@ export const VANGUARD_FLAGSHIPS: FlagshipProduct[] = [
     length: '125 mm (5") Precision',
     specA: { label: "Tip Profile", value: "0.8 mm Micro-Point" },
     specB: { label: "Surface Finish", value: "Satin Anti-Glare (<3.2% Gloss)" },
-    image: "/images/products/halsted-mosquito-straight/image-1.jpg",
+    image: "/images/placeholder-instrument.svg",
     imageAlt: "Halsted Mosquito Forceps straight delicate micro tip.",
   },
 ];
@@ -212,12 +212,12 @@ export interface CatalogItem {
 }
 
 export const SPECIMEN_VIEWS = [
-  { label: 'Primary Lateral View', sub: 'Elevation & Axis View', alt: 'Lateral profile view', image: '/images/products/kelly-forceps-curved/image-1.png' },
-  { label: 'Tip & Jaw Micro-Geometry', sub: 'Transverse Serrations', alt: 'Tip macro shot', image: '/images/products/kelly-forceps-curved/image-2.png' },
-  { label: 'Ratchet Box Lock Tension', sub: 'Calibrated Hinge Action', alt: 'Hinge box lock', image: '/images/products/kelly-forceps-curved/image-3.png' }
+  { label: 'Primary Lateral View', sub: 'Elevation & Axis View', alt: 'Lateral profile view', image: '/images/placeholder-instrument.svg' },
+  { label: 'Tip & Jaw Micro-Geometry', sub: 'Transverse Serrations', alt: 'Tip macro shot', image: '/images/placeholder-instrument.svg' },
+  { label: 'Ratchet Box Lock Tension', sub: 'Calibrated Hinge Action', alt: 'Hinge box lock', image: '/images/placeholder-instrument.svg' }
 ];
 
-export const PRIMARY_DETAIL_HERO_IMAGE = '/images/products/kelly-forceps-curved/image-1.png';
+export const PRIMARY_DETAIL_HERO_IMAGE = '/images/placeholder-instrument.svg';
 
 // ============================================================================
 // 10 REAL UPLOADED SURGICAL INSTRUMENTS (Stored in local directory & DB)
@@ -240,13 +240,8 @@ export const VANGUARD_CATALOG: CatalogItem[] = [
     material: "German DIN 1.4021 (Martensitic)",
     finish: "Electrolytic Satin Bead-Blast (<3.2% Gloss)",
     norm: "DIN 58298 / ISO 7153-1",
-    image: "/images/products/kelly-forceps-straight/image-1.jpg",
-    images: [
-      "/images/products/kelly-forceps-straight/image-1.jpg",
-      "/images/products/kelly-forceps-straight/image-2.webp",
-      "/images/products/kelly-forceps-straight/image-3.webp",
-      "/images/products/kelly-forceps-straight/image-4.jpg"
-    ],
+    image: "/images/placeholder-instrument.svg",
+    images: [],
     imageAlt: "Kelly Hemostatic Forceps straight profile.",
     tag: "Hemostatic Standard",
   },
@@ -267,13 +262,8 @@ export const VANGUARD_CATALOG: CatalogItem[] = [
     material: "German DIN 1.4021 (Martensitic)",
     finish: "Electrolytic Satin Bead-Blast",
     norm: "DIN 58298 / ISO 7153-1",
-    image: "/images/products/kelly-forceps-curved/image-1.png",
-    images: [
-      "/images/products/kelly-forceps-curved/image-1.png",
-      "/images/products/kelly-forceps-curved/image-2.png",
-      "/images/products/kelly-forceps-curved/image-3.png",
-      "/images/products/kelly-forceps-curved/image-4.jpg"
-    ],
+    image: "/images/placeholder-instrument.svg",
+    images: [],
     imageAlt: "Kelly Hemostatic Forceps curved profile.",
     tag: "Deep Cavity Clamp",
   },
@@ -294,13 +284,8 @@ export const VANGUARD_CATALOG: CatalogItem[] = [
     material: "AISI 420 Martensitic",
     finish: "Satin Anti-Glare",
     norm: "DIN 58298 / ISO 7153-1",
-    image: "/images/products/halsted-mosquito-straight/image-1.jpg",
-    images: [
-      "/images/products/halsted-mosquito-straight/image-1.jpg",
-      "/images/products/halsted-mosquito-straight/image-2.jpg",
-      "/images/products/halsted-mosquito-straight/image-3.jpg",
-      "/images/products/halsted-mosquito-straight/image-4.png"
-    ],
+    image: "/images/placeholder-instrument.svg",
+    images: [],
     imageAlt: "Halsted Mosquito Forceps straight micro tips.",
     tag: "Micro Capillary",
   },
@@ -321,13 +306,8 @@ export const VANGUARD_CATALOG: CatalogItem[] = [
     material: "AISI 420 Martensitic",
     finish: "Satin Glass Bead",
     norm: "DIN 58298",
-    image: "/images/products/halsted-mosquito-curved/image-1.jpg",
-    images: [
-      "/images/products/halsted-mosquito-curved/image-1.jpg",
-      "/images/products/halsted-mosquito-curved/image-2.jpg",
-      "/images/products/halsted-mosquito-curved/image-3.jpg",
-      "/images/products/halsted-mosquito-curved/image-4.webp"
-    ],
+    image: "/images/placeholder-instrument.svg",
+    images: [],
     imageAlt: "Halsted Mosquito Forceps curved jaws.",
     tag: "Micro Curved",
   },
@@ -348,13 +328,8 @@ export const VANGUARD_CATALOG: CatalogItem[] = [
     material: "German AISI 420 Surgical Alloy",
     finish: "Satin Anti-Glare",
     norm: "DIN 58299 / ISO 7153-1",
-    image: "/images/products/adson-tissue-1x2/image-1.jpg",
-    images: [
-      "/images/products/adson-tissue-1x2/image-1.jpg",
-      "/images/products/adson-tissue-1x2/image-2.jpg",
-      "/images/products/adson-tissue-1x2/image-3.jpg",
-      "/images/products/adson-tissue-1x2/image-4.jpg"
-    ],
+    image: "/images/placeholder-instrument.svg",
+    images: [],
     imageAlt: "Adson Tissue Forceps 1x2 interlocking teeth.",
     tag: "1x2 Rat Tooth",
   },
@@ -375,13 +350,8 @@ export const VANGUARD_CATALOG: CatalogItem[] = [
     material: "German Surgical Stainless",
     finish: "Satin Bead-Blast",
     norm: "DIN 58299",
-    image: "/images/products/adson-brown-micro/image-1.jpg",
-    images: [
-      "/images/products/adson-brown-micro/image-1.jpg",
-      "/images/products/adson-brown-micro/image-2.jpg",
-      "/images/products/adson-brown-micro/image-3.jpg",
-      "/images/products/adson-brown-micro/image-4.jpg"
-    ],
+    image: "/images/placeholder-instrument.svg",
+    images: [],
     imageAlt: "Adson-Brown micro tissue forceps 7x7 teeth.",
     tag: "7x7 Atraumatic",
   },
@@ -402,13 +372,8 @@ export const VANGUARD_CATALOG: CatalogItem[] = [
     material: "German AISI 420 Alloy",
     finish: "Electrolytic Satin Bead-Blast",
     norm: "DIN 58299 / ISO 7153-1",
-    image: "/images/products/debakey-atraumatic-forceps/image-1.jpg",
-    images: [
-      "/images/products/debakey-atraumatic-forceps/image-1.jpg",
-      "/images/products/debakey-atraumatic-forceps/image-2.jpg",
-      "/images/products/debakey-atraumatic-forceps/image-3.jpg",
-      "/images/products/debakey-atraumatic-forceps/image-4.jpg"
-    ],
+    image: "/images/placeholder-instrument.svg",
+    images: [],
     imageAlt: "DeBakey Atraumatic Vascular Forceps.",
     tag: "Atraumatic Ribbed",
   },
@@ -429,13 +394,8 @@ export const VANGUARD_CATALOG: CatalogItem[] = [
     material: "German Martensitic 1.4021",
     finish: "Anti-Glare Satin",
     norm: "DIN 58298 / ISO 7153-1",
-    image: "/images/products/rochester-pean-curved/image-1.jpg",
-    images: [
-      "/images/products/rochester-pean-curved/image-1.jpg",
-      "/images/products/rochester-pean-curved/image-2.jpg",
-      "/images/products/rochester-pean-curved/image-3.jpg",
-      "/images/products/rochester-pean-curved/image-4.jpg"
-    ],
+    image: "/images/placeholder-instrument.svg",
+    images: [],
     imageAlt: "Rochester-Pean curved hemostatic forceps.",
     tag: "Heavy Clamp",
   },
@@ -456,13 +416,8 @@ export const VANGUARD_CATALOG: CatalogItem[] = [
     material: "German Surgical Stainless",
     finish: "Satin Anti-Glare",
     norm: "DIN 58298",
-    image: "/images/products/allis-tissue-forceps/image-1.jpg",
-    images: [
-      "/images/products/allis-tissue-forceps/image-1.jpg",
-      "/images/products/allis-tissue-forceps/image-2.jpg",
-      "/images/products/allis-tissue-forceps/image-3.jpg",
-      "/images/products/allis-tissue-forceps/image-4.jpg"
-    ],
+    image: "/images/placeholder-instrument.svg",
+    images: [],
     imageAlt: "Allis Tissue Forceps 5x6 interlocking teeth.",
     tag: "5x6 Interlock",
   },
@@ -483,13 +438,8 @@ export const VANGUARD_CATALOG: CatalogItem[] = [
     material: "German Surgical Stainless",
     finish: "Electrolytic Satin Bead-Blast",
     norm: "DIN 58298 / ISO 7153-1",
-    image: "/images/products/babcock-intestinal-forceps/image-1.jpg",
-    images: [
-      "/images/products/babcock-intestinal-forceps/image-1.jpg",
-      "/images/products/babcock-intestinal-forceps/image-2.jpg",
-      "/images/products/babcock-intestinal-forceps/image-3.jpg",
-      "/images/products/babcock-intestinal-forceps/image-4.png"
-    ],
+    image: "/images/placeholder-instrument.svg",
+    images: [],
     imageAlt: "Babcock Atraumatic Intestinal Forceps loop jaws.",
     tag: "Organ Loop",
   },

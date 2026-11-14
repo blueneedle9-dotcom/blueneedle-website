@@ -5,65 +5,66 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Deep Navy / Medical Sapphire Palette
-        "primary": "#0F2942",            // Deep Surgical Navy (was #0d2725 dark forest)
-        "primary-container": "#1E4B75",  // Rich Medical Blue (was #243d3a dark emerald)
-        "primary-fixed": "#D8E6F5",      // Ice Sapphire Tint (was #cce8e4 pale green)
-        "primary-fixed-dim": "#AEC9E6",  // Soft Slate Blue (was #b0ccc8)
+        // Stitch Project 7153368526675506693 Exact Palette
+        "primary": "#00274c",
+        "primary-container": "#0f3d6c",
+        "primary-fixed": "#d4e3ff",
+        "primary-fixed-dim": "#a4c9ff",
         "on-primary": "#ffffff",
-        "on-primary-container": "#93BFE6",
-        "on-primary-fixed": "#071D33",
-        "on-primary-fixed-variant": "#153B60",
-        "inverse-primary": "#AEC9E6",
+        "on-primary-container": "#84a9de",
+        "on-primary-fixed": "#001c39",
+        "on-primary-fixed-variant": "#1e4877",
+        "inverse-primary": "#a4c9ff",
 
-        // Backgrounds & Surfaces (Crisp Clinical Blue-White)
-        "surface": "#F4F7FB",            // Crisp surgical paper white with soft cyan/blue undertone (was #f5fbf7 greenish)
-        "surface-bright": "#F8FAFD",
-        "surface-dim": "#D8E1EC",
+        // Secondary & Surgical Accents
+        "secondary": "#006877",
+        "secondary-container": "#76e7fd",
+        "secondary-fixed": "#a3eeff",
+        "secondary-fixed-dim": "#63d6ec",
+        "on-secondary": "#ffffff",
+        "on-secondary-container": "#006775",
+        "on-secondary-fixed": "#001f25",
+        "on-secondary-fixed-variant": "#004e5a",
+
+        // Tertiary Deep Surgical Blue
+        "tertiary": "#00274b",
+        "tertiary-container": "#003d70",
+        "tertiary-fixed": "#d3e3ff",
+        "tertiary-fixed-dim": "#a3c9ff",
+        "on-tertiary": "#ffffff",
+        "on-tertiary-container": "#7aa9e8",
+        "on-tertiary-fixed": "#001c38",
+        "on-tertiary-fixed-variant": "#054881",
+
+        // Crisp Sterile Clinical Surfaces
+        "surface": "#f8f9ff",
+        "surface-bright": "#f8f9ff",
+        "surface-dim": "#cbdbf5",
         "surface-container-lowest": "#ffffff",
-        "surface-container-low": "#EEF3F8",  // Clean Cool Slate-Blue White (was #eff5f1 greenish)
-        "surface-container": "#E5ECF4",      // Soft Cool Grey-Blue (was #e9efec greenish)
-        "surface-container-high": "#DBE4EF",
-        "surface-container-highest": "#D1DCE8",
-        "surface-variant": "#D1DCE8",
-        "surface-tint": "#1E4B75",
-        "background": "#F4F7FB",
+        "surface-container-low": "#eff4ff",
+        "surface-container": "#e5eeff",
+        "surface-container-high": "#dce9ff",
+        "surface-container-highest": "#d3e4fe",
+        "surface-variant": "#d3e4fe",
+        "surface-tint": "#396091",
+        "background": "#f8f9ff",
 
-        // Typography & On-Surfaces
-        "on-surface": "#0C1929",         // Midnight Navy Black (was #171d1b)
-        "on-surface-variant": "#3E4C59", // Steel Slate (was #414847)
-        "on-background": "#0C1929",
-        "inverse-surface": "#1B2735",
-        "inverse-on-surface": "#EEF3F8",
+        // Clinical Typography & On-Surfaces
+        "on-surface": "#0b1c30",
+        "on-surface-variant": "#43474f",
+        "on-background": "#0b1c30",
+        "inverse-surface": "#213145",
+        "inverse-on-surface": "#eaf1ff",
 
         // Outlines & Borders
-        "outline": "#6B7C8E",            // Cool Slate outline (was #727877)
-        "outline-variant": "#C0CDDB",    // Soft Clinical Silver-Blue border (was #c1c8c6)
-
-        // Secondary & Warm Medical Accents (Gold Rings / Tungsten Carbide Indicators)
-        "secondary": "#4B5B6D",
-        "secondary-container": "#DCE5EE",
-        "secondary-fixed": "#E2E8F0",
-        "secondary-fixed-dim": "#CBD5E1",
-        "on-secondary": "#ffffff",
-        "on-secondary-container": "#202E3D",
-        "on-secondary-fixed": "#0F1A24",
-        "on-secondary-fixed-variant": "#334150",
-
-        "tertiary": "#8A5B14",           // Refined Instrument Gold (for TC gold ring inlays)
-        "tertiary-container": "#52360B",
-        "tertiary-fixed": "#F8EBD4",
-        "tertiary-fixed-dim": "#E5CDA3",
-        "on-tertiary": "#ffffff",
-        "on-tertiary-container": "#E5CDA3",
-        "on-tertiary-fixed": "#2C1B03",
-        "on-tertiary-fixed-variant": "#5E3E0C",
+        "outline": "#737780",
+        "outline-variant": "#c3c6d0",
 
         // Error States
-        "error": "#BA1A1A",
-        "error-container": "#FFDAD6",
+        "error": "#ba1a1a",
+        "error-container": "#ffdad6",
         "on-error": "#ffffff",
-        "on-error-container": "#93000A",
+        "on-error-container": "#93000a",
       },
       borderRadius: {
         DEFAULT: "0.125rem",
@@ -73,44 +74,44 @@ export default {
       },
       spacing: {
         "space-xs": "0.25rem",
+        "space-sm": "0.5rem",
+        "space-md": "1rem",
+        "space-lg": "1.5rem",
+        "space-xl": "2.5rem",
+        "space-xxl": "4rem",
         "gutter-mobile": "1rem",
         "gutter": "1.5rem",
-        "space-sm": "0.5rem",
         "margin": "3rem",
-        "margin-mobile": "1.25rem",
-        "space-xxl": "4rem",
-        "space-md": "1rem",
-        "space-xl": "2.5rem",
-        "space-lg": "1.5rem",
+        "margin-mobile": "1rem",
       },
       fontFamily: {
-        "headline-xl-mobile": ["Manrope", "sans-serif"],
-        "headline-sm": ["Manrope", "sans-serif"],
-        "label-lg": ["Manrope", "sans-serif"],
-        "body-lg": ["Manrope", "sans-serif"],
-        "headline-xl": ["Manrope", "sans-serif"],
-        "label-sm": ["Manrope", "sans-serif"],
-        "headline-md": ["Manrope", "sans-serif"],
-        "body-md": ["Manrope", "sans-serif"],
-        "headline-lg-mobile": ["Manrope", "sans-serif"],
-        "body-sm": ["Manrope", "sans-serif"],
-        "label-md": ["Manrope", "sans-serif"],
-        "headline-lg": ["Manrope", "sans-serif"],
-        sans: ["Manrope", "sans-serif"],
+        "headline-xl": ["Plus Jakarta Sans", "sans-serif"],
+        "headline-xl-mobile": ["Plus Jakarta Sans", "sans-serif"],
+        "headline-lg": ["Plus Jakarta Sans", "sans-serif"],
+        "headline-lg-mobile": ["Plus Jakarta Sans", "sans-serif"],
+        "headline-md": ["Plus Jakarta Sans", "sans-serif"],
+        "headline-sm": ["Plus Jakarta Sans", "sans-serif"],
+        "body-lg": ["Inter", "sans-serif"],
+        "body-md": ["Inter", "sans-serif"],
+        "body-sm": ["Inter", "sans-serif"],
+        "label-lg": ["Inter", "sans-serif"],
+        "label-md": ["Inter", "sans-serif"],
+        "label-sm": ["Inter", "sans-serif"],
+        sans: ["Inter", "sans-serif"],
       },
       fontSize: {
-        "headline-xl-mobile": ["32px", { lineHeight: "40px", letterSpacing: "-0.015em", fontWeight: "600" }],
-        "headline-sm": ["20px", { lineHeight: "28px", letterSpacing: "-0.005em", fontWeight: "500" }],
-        "label-lg": ["14px", { lineHeight: "20px", letterSpacing: "0.01em", fontWeight: "500" }],
-        "body-lg": ["18px", { lineHeight: "28px", letterSpacing: "-0.005em", fontWeight: "400" }],
-        "headline-xl": ["48px", { lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "600" }],
-        "label-sm": ["10px", { lineHeight: "14px", letterSpacing: "0.06em", fontWeight: "600" }],
-        "headline-md": ["24px", { lineHeight: "32px", letterSpacing: "-0.01em", fontWeight: "600" }],
-        "body-md": ["15px", { lineHeight: "24px", letterSpacing: "0em", fontWeight: "400" }],
-        "headline-lg-mobile": ["26px", { lineHeight: "34px", letterSpacing: "-0.01em", fontWeight: "600" }],
-        "body-sm": ["13px", { lineHeight: "20px", letterSpacing: "0.005em", fontWeight: "400" }],
-        "label-md": ["12px", { lineHeight: "16px", letterSpacing: "0.04em", fontWeight: "600" }],
-        "headline-lg": ["36px", { lineHeight: "44px", letterSpacing: "-0.015em", fontWeight: "600" }],
+        "headline-xl": ["40px", { lineHeight: "48px", fontWeight: "700" }],
+        "headline-xl-mobile": ["30px", { lineHeight: "38px", fontWeight: "700" }],
+        "headline-lg": ["32px", { lineHeight: "40px", fontWeight: "600" }],
+        "headline-lg-mobile": ["24px", { lineHeight: "32px", fontWeight: "600" }],
+        "headline-md": ["22px", { lineHeight: "28px", fontWeight: "600" }],
+        "headline-sm": ["18px", { lineHeight: "24px", fontWeight: "600" }],
+        "body-lg": ["16px", { lineHeight: "24px", fontWeight: "400" }],
+        "body-md": ["14px", { lineHeight: "20px", fontWeight: "400" }],
+        "body-sm": ["12px", { lineHeight: "18px", fontWeight: "400" }],
+        "label-lg": ["14px", { lineHeight: "18px", fontWeight: "600" }],
+        "label-md": ["12px", { lineHeight: "16px", fontWeight: "500" }],
+        "label-sm": ["11px", { lineHeight: "14px", fontWeight: "600" }],
       },
     },
   },

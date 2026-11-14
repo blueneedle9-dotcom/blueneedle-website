@@ -26,13 +26,13 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { to: "/admin", label: "Dashboard", icon: "grid_view", end: true },
-  { to: "/admin/products", label: "Products", icon: "inventory_2" },
+  { to: "/admin", label: "Dashboard", icon: "dashboard", end: true },
+  { to: "/admin/products", label: "Products", icon: "medical_services" },
   { to: "/admin/categories", label: "Categories", icon: "category" },
-  { to: "/admin/inquiries", label: "Customer Inquiries", icon: "contact_support" },
-  { to: "/admin/email", label: "Email Sender", icon: "forward_to_inbox" },
-  { to: "/admin/content", label: "Website Content", icon: "web" },
-  { to: "/admin/settings", label: "Settings", icon: "tune" },
+  { to: "/admin/inquiries", label: "Inquiries & RFQs", icon: "mail_outline" },
+  { to: "/admin/email", label: "Email Center", icon: "send" },
+  { to: "/admin/content", label: "Website Content", icon: "edit_document" },
+  { to: "/admin/settings", label: "System Settings", icon: "settings" },
 ];
 
 export const AdminLayout: React.FC = () => {
@@ -41,7 +41,6 @@ export const AdminLayout: React.FC = () => {
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [globalSearch, setGlobalSearch] = useState("");
-  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   const [guardState, setGuardState] = useState<"checking" | "authorized" | "forbidden">("checking");
@@ -50,68 +49,53 @@ export const AdminLayout: React.FC = () => {
   );
 
   useEffect(() => {
-    let active = true;
-    const stored = getStoredAuth();
-
-    if (!stored?.token) {
-      navigate("/login?redirect=/admin", { replace: true });
-      return;
-    }
-
-    apiRequest<{ user: AuthUser }>("/api/auth/me", {
-      headers: getAuthHeader(),
-    })
-      .then((res) => {
-        if (!active) return;
-        setAdminUser(res.user);
-        if (res.user.role === "admin") {
+    let isMounted = true;
+    async function verify() {
+      const stored = getStoredAuth();
+      if (!stored?.token) {
+        if (isMounted) navigate("/login?from=/admin", { replace: true });
+        return;
+      }
+      try {
+        const res = await apiRequest<{ user: AuthUser }>("/api/auth/me", {
+          headers: getAuthHeader(),
+        });
+        if (!isMounted) return;
+        if (res.user.role !== "admin") {
+          setGuardState("forbidden");
+        } else {
+          setAdminUser(res.user);
+          setGuardState("authorized");
+        }
+      } catch (err) {
+        if (!isMounted) return;
+        if (stored?.user?.role === "admin") {
           setGuardState("authorized");
         } else {
-          setGuardState("forbidden");
+          clearAuth();
+          navigate("/login?from=/admin", { replace: true });
         }
-      })
-      .catch(() => {
-        if (!active) return;
-        clearAuth();
-        navigate("/login?redirect=/admin", { replace: true });
-      });
-
+      }
+    }
+    verify();
     return () => {
-      active = false;
+      isMounted = false;
     };
   }, [navigate]);
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
-        e.preventDefault();
-        searchInputRef.current?.focus();
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
-
-  const handleSignOut = () => {
+  const handleLogout = () => {
     clearAuth();
     navigate("/login", { replace: true });
   };
 
   if (guardState === "checking") {
     return (
-      <div className="min-h-screen bg-surface flex items-center justify-center p-space-lg">
-        <div className="bg-surface-container-lowest p-space-xl rounded-xl shadow-sm flex flex-col items-center gap-3 text-center max-w-sm w-full border border-outline-variant/30">
-          <div className="w-12 h-12 rounded-lg bg-primary-container flex items-center justify-center text-on-primary animate-pulse">
-            <span className="material-symbols-outlined text-[24px]">
-              precision_manufacturing
-            </span>
-          </div>
-          <p className="font-headline-sm text-headline-sm text-primary font-semibold">
-            Verifying Operations Clearance
-          </p>
-          <p className="font-body-sm text-body-sm text-on-surface-variant">
-            Validating Vanguard Swiss Master Node session...
-          </p>
+      <div className="min-h-screen bg-[#f8f9ff] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-2 border-[#00274c] border-t-transparent rounded-full animate-spin" />
+          <span className="text-xs uppercase font-semibold text-[#00274c] tracking-widest">
+            Authenticating Sialkot Admin Console...
+          </span>
         </div>
       </div>
     );
@@ -119,255 +103,170 @@ export const AdminLayout: React.FC = () => {
 
   if (guardState === "forbidden") {
     return (
-      <div className="min-h-screen bg-surface flex items-center justify-center p-space-lg">
-        <div className="bg-surface-container-lowest p-space-xl rounded-xl shadow-sm flex flex-col items-center gap-4 text-center max-w-md w-full border border-outline-variant/30">
-          <div className="w-12 h-12 rounded-xl bg-error-container flex items-center justify-center text-on-error-container">
-            <span className="material-symbols-outlined text-[26px]">
-              gpp_maybe
-            </span>
-          </div>
-          <div className="space-y-1">
-            <span className="font-label-sm text-label-sm text-error uppercase tracking-wider font-semibold">
-              403 • Restricted Administrative Gateway
-            </span>
-            <h1 className="font-headline-md text-headline-md text-primary font-bold">
-              Administrator Privileges Required
-            </h1>
-            <p className="font-body-sm text-body-sm text-on-surface-variant">
-              Signed in as <span className="font-semibold text-primary">{adminUser?.email}</span>{" "}
-              (role: <span className="font-mono text-xs">{adminUser?.role || "buyer"}</span>).
-              Only authorized Vanguard Surgical Precision administrators can access this portal.
-            </p>
-          </div>
-          <div className="flex items-center gap-3 pt-2">
-            <Link
-              to="/"
-              className="px-4 py-2 rounded-lg bg-surface-container text-primary hover:bg-surface-container-high font-semibold text-sm transition-colors"
-            >
-              Return to Storefront
-            </Link>
-            <button
-              type="button"
-              onClick={handleSignOut}
-              className="px-4 py-2 rounded-lg bg-primary text-on-primary hover:bg-primary-container font-semibold text-sm transition-colors"
-            >
-              Sign Out &amp; Switch Account
-            </button>
-          </div>
+      <div className="min-h-screen bg-[#f8f9ff] flex items-center justify-center p-6">
+        <div className="bg-white p-8 rounded-xl shadow-md border border-red-200 max-w-md w-full text-center">
+          <span className="material-symbols-outlined text-4xl text-red-500 mb-2">lock</span>
+          <h2 className="text-xl font-bold text-[#00274c] mb-2">Administrative Privileges Required</h2>
+          <p className="text-xs text-[#43474f] mb-6">
+            Your account does not possess the administrative clearance required to manage hospital catalogue telemetry.
+          </p>
+          <button
+            onClick={() => navigate("/")}
+            className="w-full bg-[#00274c] text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-[#0f3d6c] transition-colors"
+          >
+            Return to Storefront
+          </button>
         </div>
       </div>
     );
   }
 
-  const displayName = adminUser?.fullName || "Dr. Erik Vance";
-  const displayRole = adminUser?.role === "admin" ? "Catalog Admin" : "Auditor";
-
   return (
-    <div className="bg-surface font-body-md text-on-surface antialiased min-h-screen flex">
-      {/* Sidebar - Desktop Left Column */}
-      <aside className="hidden lg:flex fixed left-0 top-0 h-full w-72 bg-surface-container-low z-50 flex-col justify-between shadow-[0_1px_8px_rgba(0,0,0,0.04)] border-r border-outline-variant/20">
-        <div className="flex flex-col flex-1 overflow-y-auto">
-          {/* Brand header */}
-          <div className="px-space-lg pt-space-lg pb-space-md flex items-center gap-space-sm">
-            <div className="w-10 h-10 rounded-lg bg-primary-container text-on-primary flex items-center justify-center shrink-0">
-              <span className="material-symbols-outlined text-[22px]">
-                precision_manufacturing
-              </span>
+    <div className="min-h-screen bg-[#f8f9ff] text-[#0b1c30] flex">
+      {/* ==========================================
+          FIXED LEFT SIDEBAR (w-72)
+          ========================================== */}
+      <aside className="hidden lg:flex fixed top-0 left-0 bottom-0 w-72 bg-white border-r border-[#e5eeff] flex-col justify-between z-50">
+        <div>
+          {/* Logo & Portal Branding */}
+          <div className="h-16 px-6 flex items-center gap-3 border-b border-[#e5eeff]">
+            <div className="w-9 h-9 rounded-lg bg-[#00274c] flex items-center justify-center text-white shadow-sm">
+              <span className="material-symbols-outlined text-xl">medical_services</span>
             </div>
             <div className="flex flex-col">
-              <span className="font-headline-sm text-headline-sm font-semibold tracking-tight text-on-surface uppercase leading-none">
-                VANGUARD
+              <span className="font-['Plus_Jakarta_Sans'] text-base font-bold text-[#00274c] leading-tight">
+                BuleNeedle
               </span>
-              <span className="font-label-sm text-label-sm uppercase tracking-wider text-outline mt-0.5">
-                Surgical Admin Portal
+              <span className="text-[10px] text-[#006877] uppercase tracking-widest font-semibold">
+                Admin Console • Sialkot
               </span>
             </div>
           </div>
 
-          <div className="px-space-md py-space-xs">
-            <div className="h-[1px] bg-surface-container-highest w-full"></div>
-          </div>
-
-          {/* Navigation Links */}
-          <nav className="flex-1 px-space-md py-space-sm space-y-space-xs flex flex-col">
+          {/* Navigation Items */}
+          <nav className="p-4 flex flex-col gap-1">
             {NAV_ITEMS.map((item) => (
               <NavLink
                 key={item.to}
                 to={item.to}
                 end={item.end}
                 className={({ isActive }) =>
-                  isActive
-                    ? "flex items-center gap-space-sm px-space-md py-space-sm transition-colors bg-primary-container text-on-primary font-semibold rounded-lg text-sm"
-                    : "flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-label-lg text-label-lg"
+                  `flex items-center justify-between px-4 py-2.5 rounded-lg text-xs font-semibold transition-all ${
+                    isActive
+                      ? "bg-[#00274c] text-white shadow-sm"
+                      : "text-[#43474f] hover:bg-[#eff4ff] hover:text-[#00274c]"
+                  }`
                 }
               >
-                <span className="material-symbols-outlined text-[20px]">
-                  {item.icon}
-                </span>
-                <span>{item.label}</span>
+                <div className="flex items-center gap-3">
+                  <span className="material-symbols-outlined text-lg">{item.icon}</span>
+                  <span>{item.label}</span>
+                </div>
               </NavLink>
             ))}
           </nav>
         </div>
 
-        {/* Sidebar Footer System Status & Logout */}
-        <div className="p-space-md bg-surface-container flex flex-col gap-space-sm border-t border-outline-variant/20">
-          <div className="flex items-center justify-between px-space-sm py-space-xs rounded bg-surface-container-lowest">
-            <div className="flex items-center gap-space-xs">
-              <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse"></span>
-              <span className="font-label-sm text-label-sm uppercase tracking-wide text-on-surface font-semibold">
-                System Online
-              </span>
+        {/* Footer Facility Metadata */}
+        <div className="p-4 border-t border-[#e5eeff]">
+          <div className="bg-[#eff4ff] p-3 rounded-lg border border-[#e5eeff]">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="w-2 h-2 rounded-full bg-[#006877] animate-pulse" />
+              <span className="text-[11px] font-bold text-[#00274c]">Sialkot Manufacturing HQ</span>
             </div>
-            <span className="font-label-sm text-label-sm text-outline font-mono">
-              ISO 13485
-            </span>
+            <p className="text-[10px] text-[#43474f]">
+              ISO 13485:2016 Certified | Plant v2.4.1
+            </p>
           </div>
-
-          <button
-            type="button"
-            onClick={handleSignOut}
-            className="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-error hover:bg-error-container hover:text-on-error-container transition-colors font-label-lg text-label-lg w-full text-left"
-          >
-            <span className="material-symbols-outlined text-[20px]">logout</span>
-            <span>Log Out</span>
-          </button>
         </div>
       </aside>
 
-      {/* Main Content Area */}
-      <div className="lg:pl-72 w-full flex flex-col min-h-screen">
-        {/* Fixed Topbar */}
-        <header className="fixed top-0 left-0 lg:left-72 right-0 h-16 bg-surface/80 backdrop-blur-xl z-40 flex items-center justify-between px-space-md lg:px-space-lg shadow-[0_1px_8px_rgba(0,0,0,0.04)] border-b border-outline-variant/20">
-          <div className="flex items-center gap-space-md">
-            {/* Mobile menu trigger */}
-            <button
-              type="button"
-              onClick={() => setMobileMenuOpen((prev) => !prev)}
-              className="lg:hidden p-1.5 rounded-lg text-primary hover:bg-surface-container"
-            >
-              <span className="material-symbols-outlined text-[24px]">menu</span>
-            </button>
+      {/* ==========================================
+          MAIN AREA (Offset by 72 in LG)
+          ========================================== */}
+      <div className="flex-1 lg:pl-72 flex flex-col min-h-screen">
+        {/* Fixed Top Command Bar */}
+        <header className="sticky top-0 h-16 bg-white/95 backdrop-blur-md border-b border-[#e5eeff] z-40 flex items-center justify-between px-6 gap-4">
+          {/* Mobile hamburger */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="lg:hidden p-2 rounded-lg text-[#00274c] hover:bg-[#eff4ff]"
+          >
+            <span className="material-symbols-outlined">menu</span>
+          </button>
 
-            {/* Breadcrumb */}
-            <div className="flex items-center gap-space-xs font-label-md text-label-md text-outline">
-              <span className="hover:text-on-surface cursor-pointer">Operations</span>
-              <span className="material-symbols-outlined text-[16px]">chevron_right</span>
-              <span className="text-on-surface font-semibold">Console</span>
-            </div>
-
-            {/* Search Input */}
-            <div className="hidden md:flex items-center bg-surface-container-lowest px-space-md py-space-xs rounded-lg gap-space-xs text-outline border border-outline-variant/20 focus-within:border-primary-container">
-              <span className="material-symbols-outlined text-[18px]">search</span>
+          {/* Search bar & Live status pill */}
+          <div className="flex items-center gap-4 flex-1">
+            <div className="relative flex items-center w-full max-w-md">
+              <span className="material-symbols-outlined absolute left-3 text-[#737780] text-lg pointer-events-none">
+                search
+              </span>
               <input
                 ref={searchInputRef}
                 value={globalSearch}
                 onChange={(e) => setGlobalSearch(e.target.value)}
-                placeholder="Global Search [SKU, PO, Lot #]..."
-                className="bg-transparent border-none outline-none font-body-sm text-body-sm text-on-surface placeholder:text-outline w-56"
+                placeholder="Search catalog, SKUs, inquiries, customers..."
+                className="w-full bg-[#eff4ff] border border-transparent rounded-lg pl-9 pr-4 py-1.5 text-xs text-[#0b1c30] placeholder:text-[#737780] focus:outline-none focus:bg-white focus:border-[#006877] transition-all"
+                type="text"
               />
-              <span className="font-label-sm text-label-sm px-space-xs bg-surface-container rounded text-outline font-mono">
-                ⌘K
+            </div>
+            <div className="hidden xl:flex items-center gap-2 px-3 py-1 rounded-full bg-[#a3eeff]/40 text-[#00274c]">
+              <span className="w-2 h-2 rounded-full bg-[#006877]" />
+              <span className="text-[11px] font-semibold tracking-tight">
+                Production API: Connected • Sialkot HQ
               </span>
             </div>
           </div>
 
-          <div className="flex items-center gap-space-md">
+          {/* Right Action Cluster */}
+          <div className="flex items-center gap-3">
             <Link
-              to="/admin/products"
-              className="hidden sm:flex items-center gap-space-xs px-space-md py-space-xs bg-surface-container hover:bg-surface-container-high rounded-lg text-on-surface font-label-md text-label-md transition-colors"
+              to="/"
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#eff4ff] text-[#00274c] hover:bg-[#e5eeff] text-xs font-semibold transition-colors border border-[#e5eeff]"
             >
-              <span className="material-symbols-outlined text-[18px]">add_circle</span>
-              <span>Quick Action</span>
+              <span className="material-symbols-outlined text-sm">visibility</span>
+              <span>View Live Storefront</span>
             </Link>
-
-            {/* Notifications */}
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => setNotificationsOpen((prev) => !prev)}
-                className="relative flex items-center justify-center p-space-xs rounded-lg hover:bg-surface-container-high cursor-pointer text-on-surface-variant"
-                aria-label="Notifications"
-              >
-                <span className="material-symbols-outlined text-[22px]">notifications</span>
-                <span className="absolute top-1 right-1 w-4 h-4 bg-error text-on-error rounded-full flex items-center justify-center text-[10px] font-bold">
-                  4
-                </span>
-              </button>
-
-              {notificationsOpen && (
-                <div className="absolute right-0 mt-2 w-80 bg-surface-container-lowest rounded-xl shadow-xl border border-outline-variant/30 p-3 z-50">
-                  <div className="flex items-center justify-between pb-2 border-b border-outline-variant/20 mb-2">
-                    <span className="font-label-md text-label-md font-semibold text-primary">
-                      Operations Notifications
-                    </span>
-                    <span className="text-[11px] font-mono text-outline">4 New</span>
-                  </div>
-                  <div className="space-y-2 text-xs">
-                    <div className="p-2 bg-surface-container-low rounded">
-                      <p className="font-semibold text-primary">New EU Tender RFQ received</p>
-                      <p className="text-outline">Karolinska University Hospital (150x Metzenbaum)</p>
-                    </div>
-                    <div className="p-2 bg-surface-container-low rounded">
-                      <p className="font-semibold text-primary">Batch #2025-VSP-719 Released</p>
-                      <p className="text-outline">Passivation and Rockwell 54 HRC verified</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div className="h-6 w-[1px] bg-surface-container-highest"></div>
 
             {/* User Profile */}
             <div className="relative">
-              <div
-                onClick={() => setUserMenuOpen((prev) => !prev)}
-                className="flex items-center gap-space-sm cursor-pointer select-none"
+              <button
+                onClick={() => setUserMenuOpen(!userMenuOpen)}
+                className="flex items-center gap-2.5 p-1 rounded-lg hover:bg-[#eff4ff] transition-colors"
               >
-                <div className="relative">
-                  <div className="w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold text-xs">
-                    EV
-                  </div>
-                  <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-600 ring-2 ring-surface-container-lowest"></span>
+                <div className="w-8 h-8 rounded-full bg-[#00274c] text-white flex items-center justify-center font-bold text-xs">
+                  SA
                 </div>
-                <div className="hidden xl:flex flex-col text-left">
-                  <span className="font-label-md text-label-md font-semibold text-on-surface leading-tight">
-                    {displayName}
+                <div className="hidden md:flex flex-col text-left">
+                  <span className="text-xs font-bold text-[#00274c] leading-tight">
+                    {adminUser?.fullName || "Super Admin"}
                   </span>
-                  <span className="font-label-sm text-label-sm text-outline leading-tight">
-                    Chief Operating Officer &amp; {displayRole}
-                  </span>
+                  <span className="text-[10px] text-[#43474f]">Sialkot Facility</span>
                 </div>
-                <span className="hidden xl:inline-block font-label-sm text-label-sm px-space-xs py-0.5 bg-surface-container-high text-on-surface rounded font-semibold">
-                  Admin
-                </span>
-                <span className="material-symbols-outlined text-outline text-[18px]">
+                <span className="material-symbols-outlined text-sm text-[#737780]">
                   expand_more
                 </span>
-              </div>
+              </button>
 
               {userMenuOpen && (
-                <div className="absolute right-0 mt-2 w-56 bg-surface-container-lowest rounded-xl shadow-xl border border-outline-variant/30 py-2 z-50">
-                  <div className="px-4 py-2 border-b border-outline-variant/20">
-                    <p className="font-semibold text-sm text-primary">{displayName}</p>
-                    <p className="text-xs text-outline truncate">{adminUser?.email}</p>
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-[#e5eeff] py-1 z-50">
+                  <div className="px-4 py-2 border-b border-[#eff4ff]">
+                    <p className="text-xs font-bold text-[#00274c]">{adminUser?.fullName || "Super Admin"}</p>
+                    <p className="text-[10px] text-[#43474f] truncate">{adminUser?.email || "admin@buleneedle.com"}</p>
                   </div>
                   <Link
-                    to="/"
-                    target="_blank"
-                    className="flex items-center gap-2 px-4 py-2 text-sm text-on-surface hover:bg-surface-container"
+                    to="/admin/settings"
+                    onClick={() => setUserMenuOpen(false)}
+                    className="block px-4 py-2 text-xs text-[#0b1c30] hover:bg-[#eff4ff]"
                   >
-                    <span className="material-symbols-outlined text-base">open_in_new</span>
-                    View Public Storefront
+                    System Settings
                   </Link>
                   <button
-                    type="button"
-                    onClick={handleSignOut}
-                    className="w-full text-left flex items-center gap-2 px-4 py-2 text-sm text-error hover:bg-error-container/20"
+                    onClick={handleLogout}
+                    className="w-full text-left px-4 py-2 text-xs text-red-600 hover:bg-red-50 flex items-center gap-2"
                   >
-                    <span className="material-symbols-outlined text-base">logout</span>
-                    Sign Out
+                    <span className="material-symbols-outlined text-sm">logout</span>
+                    <span>Sign Out</span>
                   </button>
                 </div>
               )}
@@ -377,25 +276,19 @@ export const AdminLayout: React.FC = () => {
 
         {/* Mobile Sidebar Overlay */}
         {mobileMenuOpen && (
-          <div className="lg:hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex">
-            <div className="w-72 bg-surface-container-low h-full flex flex-col justify-between p-4 shadow-2xl animate-fadeIn">
+          <div className="lg:hidden fixed inset-0 z-50 flex">
+            <div
+              onClick={() => setMobileMenuOpen(false)}
+              className="fixed inset-0 bg-black/40 backdrop-blur-sm"
+            />
+            <div className="relative w-64 bg-white h-full flex flex-col justify-between p-4 z-10 border-r border-[#e5eeff]">
               <div>
-                <div className="flex items-center justify-between pb-4 border-b border-outline-variant/20 mb-4">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-lg bg-primary-container text-on-primary flex items-center justify-center">
-                      <span className="material-symbols-outlined text-[18px]">precision_manufacturing</span>
-                    </div>
-                    <span className="font-bold text-primary">VANGUARD ADMIN</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="p-1 rounded text-outline hover:text-primary"
-                  >
-                    ✕
+                <div className="flex items-center justify-between pb-4 border-b border-[#e5eeff] mb-4">
+                  <span className="font-bold text-[#00274c]">BuleNeedle Admin</span>
+                  <button onClick={() => setMobileMenuOpen(false)}>
+                    <span className="material-symbols-outlined">close</span>
                   </button>
                 </div>
-
                 <nav className="flex flex-col gap-1">
                   {NAV_ITEMS.map((item) => (
                     <NavLink
@@ -404,35 +297,32 @@ export const AdminLayout: React.FC = () => {
                       end={item.end}
                       onClick={() => setMobileMenuOpen(false)}
                       className={({ isActive }) =>
-                        isActive
-                          ? "flex items-center gap-2 px-3 py-2 bg-primary-container text-on-primary font-semibold rounded-lg text-sm"
-                          : "flex items-center gap-2 px-3 py-2 rounded-lg text-on-surface hover:bg-surface-container text-sm"
+                        `flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold ${
+                          isActive
+                            ? "bg-[#00274c] text-white"
+                            : "text-[#43474f] hover:bg-[#eff4ff]"
+                        }`
                       }
                     >
-                      <span className="material-symbols-outlined text-[18px]">{item.icon}</span>
+                      <span className="material-symbols-outlined text-lg">{item.icon}</span>
                       <span>{item.label}</span>
                     </NavLink>
                   ))}
                 </nav>
               </div>
-
-              <div className="pt-4 border-t border-outline-variant/20">
-                <button
-                  type="button"
-                  onClick={handleSignOut}
-                  className="flex items-center gap-2 px-3 py-2 text-error text-sm font-semibold w-full"
-                >
-                  <span className="material-symbols-outlined text-[18px]">logout</span>
-                  Log Out
-                </button>
-              </div>
+              <button
+                onClick={handleLogout}
+                className="w-full py-2 bg-red-50 text-red-600 rounded-lg text-xs font-semibold flex items-center justify-center gap-1"
+              >
+                <span className="material-symbols-outlined text-sm">logout</span>
+                <span>Sign Out</span>
+              </button>
             </div>
-            <div className="flex-1" onClick={() => setMobileMenuOpen(false)}></div>
           </div>
         )}
 
-        {/* Outlet Main Page Area */}
-        <main className="w-full pt-16 bg-surface flex-1">
+        {/* Content Outlet */}
+        <main className="flex-1 p-6 md:p-8">
           <Outlet context={{ adminUser, globalSearch, setGlobalSearch }} />
         </main>
       </div>
